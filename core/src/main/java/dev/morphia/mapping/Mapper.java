@@ -20,6 +20,7 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -178,6 +179,7 @@ public class Mapper {
         return discriminatorLookup;
     }
 
+    private static final Set<Class> NOT_MAPPABLE_CLASSES = Set.of(ObjectId.class, Date.class, String.class)
     /**
      * Gets the {@link EntityModel} for the object (type). If it isn't mapped, create a new class and cache it (without validating).
      *
@@ -185,6 +187,9 @@ public class Mapper {
      * @return the EntityModel for the object given
      */
     public EntityModel getEntityModel(Class type) {
+        if (NOT_MAPPABLE_CLASSES.contains(type) || type.isEnum()) {
+            return null;
+        }
         final Class actual = MorphiaProxy.class.isAssignableFrom(type) ? type.getSuperclass() : type;
         EntityModel model = mappedEntities.get(actual);
 
