@@ -8,5 +8,5 @@ nav:
 
 asciidoc:
   attributes:
-    version: 2.3.0-SNAPSHOT
+    version: 2.2.3.TRAVELC.4
     srcRef: https://github.com/MorphiaOrg/morphia/blob/master
