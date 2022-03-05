@@ -2,12 +2,11 @@ package dev.morphia.aggregation.experimental.expressions;
 
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.expressions.impls.Expression;
-import dev.morphia.annotations.internal.MorphiaInternal;
+import dev.morphia.aggregation.experimental.expressions.impls.ExpressionList;
 import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import static dev.morphia.aggregation.experimental.codecs.ExpressionHelper.expression;
 
 /**
  * Defines helper methods for the object expressions
@@ -35,7 +34,7 @@ public final class ObjectExpressions {
     public static class MergeObjects extends Expression {
 
         protected MergeObjects() {
-            super("$mergeObjects", new ArrayList<Expression>());
+            super("$mergeObjects", new ExpressionList());
         }
 
         /**
@@ -46,7 +45,7 @@ public final class ObjectExpressions {
          */
         @SuppressWarnings("unchecked")
         public MergeObjects add(Expression expression) {
-            List<Expression> value = (List<Expression>) getValue();
+            ExpressionList value = (ExpressionList) getValue();
             if (value != null) {
                 value.add(expression);
             }
@@ -54,9 +53,8 @@ public final class ObjectExpressions {
         }
 
         @Override
-        @MorphiaInternal
         public void encode(Datastore datastore, BsonWriter writer, EncoderContext encoderContext) {
-            super.encode(datastore, writer, encoderContext);
+            expression(datastore, writer, getOperation(), getValue(), encoderContext);
         }
     }
 }

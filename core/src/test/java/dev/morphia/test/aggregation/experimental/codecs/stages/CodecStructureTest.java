@@ -8,6 +8,7 @@ import dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions;
 import dev.morphia.aggregation.experimental.expressions.ConditionalExpressions;
 import dev.morphia.aggregation.experimental.expressions.MathExpressions;
 import dev.morphia.aggregation.experimental.expressions.ObjectExpressions;
+import dev.morphia.aggregation.experimental.expressions.impls.Expression;
 import dev.morphia.aggregation.experimental.stages.AddFields;
 import dev.morphia.aggregation.experimental.stages.Bucket;
 import dev.morphia.aggregation.experimental.stages.CollectionStats;
@@ -32,6 +33,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
+import static dev.morphia.aggregation.experimental.codecs.ExpressionHelper.document;
 import static dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions.push;
 import static dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions.sum;
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.array;
@@ -218,8 +220,6 @@ public class CodecStructureTest extends TestBase {
                .get(Sample.class)
                .encode(writer, Sample.sample(15L), EncoderContext.builder().build());
         Document actual = writer.getDocument();
-        assertEquals(writer.getDocsLevel(), 0);
-        assertEquals(writer.getArraysLevel(), 0);
         assertEquals(((Document) actual.get("$sample")).getLong("size").longValue(), 15L);
     }
 
@@ -230,8 +230,6 @@ public class CodecStructureTest extends TestBase {
                .get(Skip.class)
                .encode(writer, Skip.skip(15L), EncoderContext.builder().build());
         Document actual = writer.getDocument();
-        assertEquals(writer.getDocsLevel(), 0);
-        assertEquals(writer.getArraysLevel(), 0);
         assertEquals(actual.getLong("$skip").longValue(), 15L);
     }
 
@@ -242,8 +240,15 @@ public class CodecStructureTest extends TestBase {
                         .get(value.getClass()))
             .encode(writer, value, EncoderContext.builder().build());
         Document actual = writer.getDocument();
-        assertEquals(writer.getDocsLevel(), 0);
-        assertEquals(writer.getArraysLevel(), 0);
+
+        assertDocumentEquals(actual, expected);
+    }
+    private void evaluate(Document expected, Expression value) {
+        DocumentWriter writer = new DocumentWriter(getMapper());
+        document(writer, () -> {
+            value.encode(getDs(), writer, EncoderContext.builder().build());
+        });
+        Document actual = writer.getDocument();
 
         assertDocumentEquals(actual, expected);
     }

@@ -1,6 +1,7 @@
 package dev.morphia.aggregation.experimental.expressions;
 
 import dev.morphia.aggregation.experimental.expressions.impls.Expression;
+import dev.morphia.aggregation.experimental.expressions.impls.ExpressionList;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public final class ComparisonExpressions {
      * @aggregation.expression $gt
      */
     public static Expression gt(Expression first, Expression second) {
-        return new Expression("$gt", List.of(first, second));
+        return new Expression("$gt", new ExpressionList(first, second));
     }
 
     /**

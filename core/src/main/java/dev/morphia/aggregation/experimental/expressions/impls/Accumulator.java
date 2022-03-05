@@ -4,11 +4,9 @@ import dev.morphia.Datastore;
 import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static dev.morphia.aggregation.experimental.codecs.ExpressionHelper.document;
-import static dev.morphia.aggregation.experimental.codecs.ExpressionHelper.expression;
+import static dev.morphia.aggregation.experimental.codecs.ExpressionHelper.wrapExpression;
 
 /**
  * Base class for the accumulator expression types.
@@ -16,7 +14,6 @@ import static dev.morphia.aggregation.experimental.codecs.ExpressionHelper.expre
  * @since 2.0
  */
 public class Accumulator extends Expression {
-    private final List<Expression> expressions = new ArrayList<>();
 
     /**
      * @param operation
@@ -24,23 +21,31 @@ public class Accumulator extends Expression {
      * @morphia.internal
      */
     public Accumulator(String operation, List<Expression> values) {
-        super(operation);
-        expressions.addAll(values);
+        super(operation, new ExpressionList(values));
     }
 
     @Override
     public void encode(Datastore datastore, BsonWriter writer, EncoderContext encoderContext) {
-        document(writer, () -> {
-            writer.writeName(getOperation());
-            if (expressions.size() > 1) {
+        writer.writeName(getOperation());
+        ExpressionList values = getValue();
+        if (values != null) {
+            List<Expression> list = values.getValues();
+            if (list.size() > 1) {
                 writer.writeStartArray();
             }
-            for (Expression expression : expressions) {
-                expression(datastore, writer, expression, encoderContext);
+            for (Expression expression : list) {
+                wrapExpression(datastore, writer, expression, encoderContext);
             }
-            if (expressions.size() > 1) {
+            if (list.size() > 1) {
                 writer.writeEndArray();
             }
-        });
+        } else {
+            writer.writeNull();
+        }
+    }
+
+    @Override
+    public ExpressionList getValue() {
+        return (ExpressionList) super.getValue();
     }
 }
