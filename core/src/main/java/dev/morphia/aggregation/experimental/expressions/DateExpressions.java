@@ -2,10 +2,13 @@ package dev.morphia.aggregation.experimental.expressions;
 
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.codecs.ExpressionHelper;
+import dev.morphia.aggregation.experimental.expressions.impls.DateDeltaExpression;
+import dev.morphia.aggregation.experimental.expressions.impls.DateDiffExpression;
 import dev.morphia.aggregation.experimental.expressions.impls.DateFromParts;
 import dev.morphia.aggregation.experimental.expressions.impls.DateFromString;
 import dev.morphia.aggregation.experimental.expressions.impls.DateToParts;
 import dev.morphia.aggregation.experimental.expressions.impls.DateToString;
+import dev.morphia.aggregation.experimental.expressions.impls.DateTruncExpression;
 import dev.morphia.aggregation.experimental.expressions.impls.Expression;
 import dev.morphia.aggregation.experimental.expressions.impls.IsoDates;
 import dev.morphia.annotations.internal.MorphiaInternal;
@@ -20,6 +23,70 @@ import org.bson.codecs.EncoderContext;
  */
 public final class DateExpressions {
     private DateExpressions() {
+    }
+
+    /**
+     * Increments a Date object by a specified number of time units.
+     *
+     * @param startDate The beginning date, in UTC, for the addition operation. The startDate can be any expression that resolves to a
+     *                  Date, a Timestamp, or an ObjectID.
+     * @param amount    The number of units added to the startDate.
+     * @param unit      The unit used to measure the amount of time added to the startDate.
+     * @return the new expression
+     * @aggregation.expression $dateAdd
+     * @mongodb.server.release 5.0
+     * @since 2.3
+     */
+    public static DateDeltaExpression dateAdd(Expression startDate, long amount, TimeUnit unit) {
+        return new DateDeltaExpression("$dateAdd", startDate, amount, unit);
+    }
+
+    /**
+     * Decrements a Date object by a specified number of time units.
+     *
+     * @param startDate The beginning date, in UTC, for the subtraction operation. The startDate can be any expression that resolves to a
+     *                  Date, a Timestamp, or an ObjectID.
+     * @param amount    The number of units subtracted to the startDate.
+     * @param unit      The unit used to measure the amount of time subtracted to the startDate.
+     * @return the new expression
+     * @aggregation.expression $dateSubtract
+     * @mongodb.server.release 5.0
+     * @since 2.3
+     */
+    public static DateDeltaExpression dateSubtract(Expression startDate, long amount, TimeUnit unit) {
+        return new DateDeltaExpression("$dateSubtract", startDate, amount, unit);
+    }
+
+    /**
+     * Returns the difference between two dates.
+     *
+     * @param startDate The beginning date, in UTC, for the addition operation. The startDate can be any expression that resolves to a
+     *                  Date, a Timestamp, or an ObjectID.
+     * @param endDate   The beginning date, in UTC, for the addition operation. The endDate can be any expression that resolves to a
+     *                  Date, a Timestamp, or an ObjectID.
+     * @param unit      The unit used to measure the amount of time added to the startDate.
+     * @return the new expression
+     * @aggregation.expression $dateDiff
+     * @mongodb.server.release 5.0
+     * @since 2.3
+     */
+    public static DateDiffExpression dateDiff(Expression startDate, Expression endDate, TimeUnit unit) {
+        return new DateDiffExpression(startDate, endDate, unit);
+    }
+
+    /**
+     * Truncates a date.
+     *
+     * @param date The date to truncate, specified in UTC. The date can be any expression that resolves to a Date, a Timestamp, or an
+     *             ObjectID.
+     * @param unit The unit used to measure the amount of time added to the startDate.
+     * @return the new expression
+     * @aggregation.expression $dateTrunc
+     * @mongodb.server.release 5.0
+     * @since 2.3
+     */
+    public static DateTruncExpression dateTrunc(Expression date, TimeUnit unit) {
+        return new DateTruncExpression(date, unit);
     }
 
     /**
