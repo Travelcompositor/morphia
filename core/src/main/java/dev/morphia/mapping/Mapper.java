@@ -23,15 +23,7 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
@@ -179,7 +171,7 @@ public class Mapper {
         return discriminatorLookup;
     }
 
-    private static final Set<Class> NOT_MAPPABLE_CLASSES = Set.of(ObjectId.class, Date.class, String.class)
+    private static final Set<Class> NOT_MAPPABLE_CLASSES = Set.of(ObjectId.class, Date.class, String.class);
     /**
      * Gets the {@link EntityModel} for the object (type). If it isn't mapped, create a new class and cache it (without validating).
      *
