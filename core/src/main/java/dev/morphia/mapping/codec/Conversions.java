@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import static java.lang.Boolean.FALSE;
@@ -30,7 +29,7 @@ import static java.lang.Boolean.FALSE;
 public final class Conversions {
     private static final Logger LOG = LoggerFactory.getLogger(Conversions.class);
 
-    private static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> CONVERSIONS = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> CONVERSIONS = new HashMap<>();
 
     static {
         registerStringConversions();
