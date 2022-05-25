@@ -3,16 +3,7 @@
 
 name: Morphia Build
 
-on:
-  push:
-    tags-ignore:
-      - r[0-9]*
-  pull_request:
-    tags-ignore:
-      - r[0-9]*
-  workflow_dispatch:
-    tags-ignore:
-      - r[0-9]*
+on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
   Morphia:
@@ -51,11 +42,9 @@ jobs:
   Quality:
     name: Style Checks
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
@@ -64,7 +53,9 @@ jobs:
           cache: 'maven'
 
       - name: Quality Checks
-        run: mvn install -Pquality -DskipTests
+        run: |
+          mvn install -DskipTests
+          mvn -f core/pom.xml -Pquality -DskipTests
 
   Snapshots:
     name: Publish Snapshot Artifacts

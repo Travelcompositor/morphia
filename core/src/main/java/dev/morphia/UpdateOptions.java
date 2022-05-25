@@ -22,7 +22,7 @@ import com.mongodb.client.model.Collation;
 import com.mongodb.lang.Nullable;
 import dev.morphia.internal.SessionConfigurable;
 import dev.morphia.internal.WriteConfigurable;
-import dev.morphia.query.experimental.filters.Filter;
+import dev.morphia.query.filters.Filter;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -38,10 +38,11 @@ import java.util.List;
  * @since 1.3
  */
 public class UpdateOptions extends com.mongodb.client.model.UpdateOptions
-    implements SessionConfigurable<UpdateOptions>, WriteConfigurable<UpdateOptions> {
+    implements SessionConfigurable<UpdateOptions>, WriteConfigurable<UpdateOptions>, AlternateCollection<UpdateOptions> {
     private WriteConcern writeConcern;
     private boolean multi;
     private ClientSession clientSession;
+    private String collection;
 
     /**
      * Adds a new array filter
@@ -75,6 +76,17 @@ public class UpdateOptions extends com.mongodb.client.model.UpdateOptions
     @Nullable
     public ClientSession clientSession() {
         return clientSession;
+    }
+
+    @Override
+    public UpdateOptions collection(String collection) {
+        this.collection = collection;
+        return this;
+    }
+
+    @Override
+    public String collection() {
+        return collection;
     }
 
     /**

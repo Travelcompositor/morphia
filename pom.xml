@@ -45,7 +45,7 @@
         <json.assert.version>1.5.0</json.assert.version>
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.version>1.6.10</kotlin.version>
-        <maven.version>3.8.4</maven.version>
+        <maven.version>3.8.5</maven.version>
         <revapi.maven.plugin.version>0.14.6</revapi.maven.plugin.version>
         <revapi.java.version>0.26.1</revapi.java.version>
         <roaster.version>2.23.2.Final</roaster.version>
@@ -144,7 +144,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.10.0</version>
+                    <version>3.10.1</version>
                     <configuration>
                         <source>11</source>
                         <target>11</target>
@@ -197,7 +197,7 @@
                         <dependency>
                             <groupId>com.github.spotbugs</groupId>
                             <artifactId>spotbugs</artifactId>
-                            <version>4.5.3</version>
+                            <version>4.6.0</version>
                             <type>pom</type>
                         </dependency>
                     </dependencies>

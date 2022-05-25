@@ -23,13 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static dev.morphia.aggregation.experimental.codecs.ExpressionHelper.document;
+import static dev.morphia.aggregation.codecs.ExpressionHelper.document;
 import static dev.morphia.mapping.codec.references.ReferenceCodec.processId;
 
 /**
  * Defines a codec for MorphiaReference values
  */
 @SuppressWarnings("ALL")
+@Deprecated(forRemoval = true, since = "2.3")
 public class MorphiaReferenceCodec extends BaseReferenceCodec<MorphiaReference> implements PropertyHandler {
 
     private final Mapper mapper;

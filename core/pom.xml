@@ -130,7 +130,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.10.1</version>
                 <configuration>
                     <compilerArgs>
                         <arg>-parameters</arg>
@@ -175,7 +175,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.5.3</version>
+            <version>4.6.0</version>
             <scope>compile</scope>
         </dependency>
 
@@ -203,7 +203,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
-            <version>3.8.4</version>
+            <version>3.8.5</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

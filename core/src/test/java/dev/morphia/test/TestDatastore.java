@@ -3,6 +3,7 @@ package dev.morphia.test;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import dev.morphia.Datastore;
@@ -19,35 +20,43 @@ import dev.morphia.annotations.PostPersist;
 import dev.morphia.annotations.PreLoad;
 import dev.morphia.annotations.PrePersist;
 import dev.morphia.annotations.Transient;
+import dev.morphia.mapping.MapperOptions;
 import dev.morphia.mapping.MappingException;
+import dev.morphia.query.CountOptions;
 import dev.morphia.query.FindAndDeleteOptions;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Modify;
 import dev.morphia.query.Query;
 import dev.morphia.query.Update;
 import dev.morphia.test.models.Address;
+import dev.morphia.test.models.Book;
 import dev.morphia.test.models.City;
 import dev.morphia.test.models.CurrentStatus;
 import dev.morphia.test.models.FacebookUser;
 import dev.morphia.test.models.Grade;
 import dev.morphia.test.models.Hotel;
+import dev.morphia.test.models.Population;
 import dev.morphia.test.models.Rectangle;
 import dev.morphia.test.models.TestEntity;
+import dev.morphia.test.models.User;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.CollationStrength.SECONDARY;
 import static com.mongodb.client.model.ReturnDocument.AFTER;
 import static com.mongodb.client.model.ReturnDocument.BEFORE;
-import static dev.morphia.query.experimental.filters.Filters.eq;
-import static dev.morphia.query.experimental.updates.UpdateOperators.inc;
-import static dev.morphia.query.experimental.updates.UpdateOperators.set;
+import static dev.morphia.query.filters.Filters.eq;
+import static dev.morphia.query.updates.UpdateOperators.inc;
+import static dev.morphia.query.updates.UpdateOperators.set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.List.of;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -56,19 +65,165 @@ import static org.testng.Assert.assertTrue;
 
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 public class TestDatastore extends TestBase {
+
+    @Test
+    public void testAlternateCollections() {
+        final String alternateName = "alternate";
+
+        getMapper().map(Book.class, User.class);
+
+        Book book = getDs().save(new Book(), new InsertOneOptions()
+            .collection(alternateName));
+
+        Book first = getDs().find(Book.class)
+                            .filter(eq("_id", book.id))
+                            .first(new FindOptions().collection(alternateName));
+        assertEquals(first, book);
+
+        getDs().find(Book.class)
+               .delete(new DeleteOptions()
+                   .collection(alternateName));
+        long count = getDs()
+            .find(Book.class)
+            .filter(eq("_id", book.id))
+            .count(new CountOptions().collection(alternateName));
+        assertEquals(count, 0);
+
+        book = new Book();
+        User user = new User();
+        getDs().save(of(book, user), new InsertManyOptions()
+            .collection(alternateName));
+        List<Document> list = getDatabase().getCollection(alternateName)
+                                           .find(Filters.in("_id", book.id, user.getId()))
+                                           .projection(new Document("_id", 1))
+                                           .into(new ArrayList<>());
+
+        assertEquals(list.stream()
+                         .map(d -> d.getObjectId("_id"))
+                         .collect(Collectors.toList()),
+            of(book.id, user.getId()));
+
+        getDs().find(Book.class)
+               .delete(new DeleteOptions()
+                   .collection(alternateName)
+                   .multi(true));
+
+        getDs().save(new Book(), new InsertOneOptions()
+            .collection(alternateName));
+
+        Book modify = getDs().find(Book.class)
+                             .modify(new ModifyOptions()
+                                     .collection(alternateName)
+                                     .returnDocument(AFTER),
+                                 inc("copies", 10));
+
+        assertEquals(modify.copies, 10);
+
+        getDs().find(Book.class)
+               .update(new UpdateOptions()
+                       .collection(alternateName),
+                   set("copies", 42));
+
+        book = getDs().find(Book.class).first(new FindOptions().collection(alternateName));
+
+        assertEquals(book.copies, 42);
+
+        Book delete = getDs().find(Book.class)
+                             .filter(eq("_id", book.id))
+                             .findAndDelete(new FindAndDeleteOptions()
+                                 .collection(alternateName));
+
+        assertEquals(delete, book);
+    }
+
+    @SuppressWarnings("removal")
+    @Test
+    public void testAlternateCollectionsWithLegacyQuery() {
+        withOptions(MapperOptions.legacy().build(), () -> {
+            final String alternateName = "alternate";
+
+            getMapper().map(Book.class, User.class);
+
+            Book book = getDs().save(new Book(), new InsertOneOptions()
+                .collection(alternateName));
+
+            Book first = getDs().find(Book.class)
+                                .field("_id").equal(book.id)
+                                .first(new FindOptions().collection(alternateName));
+            assertEquals(first, book);
+
+            getDs().find(Book.class)
+                   .delete(new DeleteOptions()
+                       .collection(alternateName));
+            long count = getDs()
+                .find(Book.class)
+                .field("_id").equal(book.id)
+                .count(new CountOptions().collection(alternateName));
+            assertEquals(count, 0);
+
+            book = new Book();
+            User user = new User();
+            getDs().save(of(book, user), new InsertManyOptions()
+                .collection(alternateName));
+            List<Document> list = getDatabase().getCollection(alternateName)
+                                               .find(Filters.in("_id", book.id, user.getId()))
+                                               .projection(new Document("_id", 1))
+                                               .into(new ArrayList<>());
+
+            assertEquals(list.stream()
+                             .map(d -> d.getObjectId("_id"))
+                             .collect(Collectors.toList()),
+                of(book.id, user.getId()));
+
+            getDs().find(Book.class)
+                   .delete(new DeleteOptions()
+                       .collection(alternateName)
+                       .multi(true));
+
+            getDs().save(new Book(), new InsertOneOptions()
+                .collection(alternateName));
+
+            Book modify = getDs().find(Book.class)
+                                 .modify(new ModifyOptions()
+                                         .collection(alternateName)
+                                         .returnDocument(AFTER),
+                                     inc("copies", 10));
+
+            assertEquals(modify.copies, 10);
+
+            getDs().find(Book.class)
+                   .update(new UpdateOptions()
+                           .collection(alternateName),
+                       set("copies", 42));
+
+            book = getDs().find(Book.class).first(new FindOptions().collection(alternateName));
+
+            assertEquals(book.copies, 42);
+
+            Book delete = getDs().find(Book.class)
+                                 .field("_id").equal(book.id)
+                                 .findAndDelete(new FindAndDeleteOptions()
+                                     .collection(alternateName));
+
+            assertEquals(delete, book);
+        });
+    }
+
     @Test
     public void testBulkInsert() {
-
-        MongoCollection collection = getDs().getCollection(TestEntity.class);
+        MongoCollection testEntity = getDs().getCollection(TestEntity.class);
+        MongoCollection population = getDs().getCollection(Population.class);
         this.getDs().insert(asList(new TestEntity(), new TestEntity(), new TestEntity(), new TestEntity(), new TestEntity()),
             new InsertManyOptions().writeConcern(WriteConcern.ACKNOWLEDGED));
-        assertEquals(collection.countDocuments(), 5);
+        assertEquals(testEntity.countDocuments(), 5);
 
-        collection.drop();
-        this.getDs().insert(asList(new TestEntity(), new TestEntity(), new TestEntity(), new TestEntity(), new TestEntity()),
+        testEntity.drop();
+        population.drop();
+        this.getDs().insert(asList(new TestEntity(), new TestEntity(), new Population(), new Population(), new Population()),
             new InsertManyOptions()
                 .writeConcern(WriteConcern.ACKNOWLEDGED));
-        assertEquals(collection.countDocuments(), 5);
+        assertEquals(testEntity.countDocuments(), 2);
+        assertEquals(population.countDocuments(), 3);
     }
 
     @Test
@@ -349,7 +504,7 @@ public class TestDatastore extends TestBase {
     @Test
     public void testLifecycle() {
         final LifecycleTestObj life1 = new LifecycleTestObj();
-        getMapper().map(List.of(LifecycleTestObj.class));
+        getMapper().map(of(LifecycleTestObj.class));
         getDs().save(life1);
         assertTrue(LifecycleListener.foundDatastore);
         assertTrue(life1.prePersist);
@@ -372,7 +527,7 @@ public class TestDatastore extends TestBase {
     @Test
     public void testLifecycleListeners() {
         final LifecycleTestObj life1 = new LifecycleTestObj();
-        getMapper().map(List.of(LifecycleTestObj.class));
+        getMapper().map(of(LifecycleTestObj.class));
         getDs().save(life1);
         assertTrue(LifecycleListener.prePersist);
         assertTrue(LifecycleListener.prePersistWithEntity);
@@ -416,7 +571,7 @@ public class TestDatastore extends TestBase {
         });
 
         assertThrows(MappingException.class, () -> {
-            getDs().save(List.of(grade, grade));
+            getDs().save(of(grade, grade));
         });
 
     }

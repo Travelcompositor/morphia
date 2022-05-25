@@ -20,6 +20,7 @@ import com.mongodb.WriteConcern;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Collation;
 import com.mongodb.lang.Nullable;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.internal.SessionConfigurable;
 import dev.morphia.internal.WriteConfigurable;
 import org.bson.Document;
@@ -31,11 +32,12 @@ import org.bson.conversions.Bson;
  * @mongodb.driver.manual tutorial/remove-documents/ Remove Documents
  * @since 1.3
  */
-public final class DeleteOptions extends com.mongodb.client.model.DeleteOptions implements SessionConfigurable<DeleteOptions>,
-                                                                                               WriteConfigurable<DeleteOptions> {
+public final class DeleteOptions extends com.mongodb.client.model.DeleteOptions
+    implements SessionConfigurable<DeleteOptions>, WriteConfigurable<DeleteOptions>, AlternateCollection<DeleteOptions> {
     private boolean multi;
     private WriteConcern writeConcern = WriteConcern.ACKNOWLEDGED;
     private ClientSession clientSession;
+    private String collection;
 
     /**
      * Creates a new options instance
@@ -48,10 +50,12 @@ public final class DeleteOptions extends com.mongodb.client.model.DeleteOptions 
      * @morphia.internal
      * @since 2.0
      */
+    @MorphiaInternal
     public DeleteOptions(DeleteOptions that) {
         this.multi = that.multi;
         this.writeConcern = that.writeConcern;
         this.clientSession = that.clientSession;
+        this.collection = that.collection;
     }
 
     @Override
@@ -69,6 +73,17 @@ public final class DeleteOptions extends com.mongodb.client.model.DeleteOptions 
     public DeleteOptions collation(@Nullable Collation collation) {
         super.collation(collation);
         return this;
+    }
+
+    @Override
+    public DeleteOptions collection(String collection) {
+        this.collection = collection;
+        return this;
+    }
+
+    @Override
+    public String collection() {
+        return collection;
     }
 
     /**

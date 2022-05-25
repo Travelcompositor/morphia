@@ -14,17 +14,16 @@ import com.mongodb.client.model.ValidationOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.lang.Nullable;
-import dev.morphia.aggregation.experimental.Aggregation;
-import dev.morphia.aggregation.experimental.AggregationImpl;
-import dev.morphia.aggregation.experimental.codecs.AggregationCodecProvider;
+import dev.morphia.aggregation.Aggregation;
+import dev.morphia.aggregation.AggregationImpl;
+import dev.morphia.aggregation.codecs.AggregationCodecProvider;
 import dev.morphia.annotations.CappedAt;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.IndexHelper;
 import dev.morphia.annotations.Validation;
 import dev.morphia.annotations.internal.MorphiaInternal;
-import dev.morphia.experimental.MorphiaSession;
-import dev.morphia.experimental.MorphiaSessionImpl;
 import dev.morphia.internal.SessionConfigurable;
+import dev.morphia.mapping.EntityModelImporter;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.MappingException;
 import dev.morphia.mapping.codec.EnumCodecProvider;
@@ -35,7 +34,6 @@ import dev.morphia.mapping.codec.pojo.EntityModel;
 import dev.morphia.mapping.codec.pojo.MergingEncoder;
 import dev.morphia.mapping.codec.pojo.MorphiaCodec;
 import dev.morphia.mapping.codec.pojo.PropertyModel;
-import dev.morphia.mapping.codec.pojo.experimental.EntityModelImporter;
 import dev.morphia.mapping.codec.reader.DocumentReader;
 import dev.morphia.mapping.codec.writer.DocumentWriter;
 import dev.morphia.query.FindOptions;
@@ -44,7 +42,9 @@ import dev.morphia.query.QueryFactory;
 import dev.morphia.query.Update;
 import dev.morphia.query.UpdateException;
 import dev.morphia.sofia.Sofia;
-import dev.morphia.transactions.experimental.MorphiaTransaction;
+import dev.morphia.transactions.MorphiaSession;
+import dev.morphia.transactions.MorphiaSessionImpl;
+import dev.morphia.transactions.MorphiaTransaction;
 import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
@@ -61,7 +61,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 
-import static dev.morphia.query.experimental.filters.Filters.eq;
+import static dev.morphia.query.filters.Filters.eq;
+import static dev.morphia.query.updates.UpdateOperators.set;
 import static org.bson.Document.parse;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
@@ -112,7 +113,7 @@ public class DatastoreImpl implements AdvancedDatastore {
      * @morphia.internal
      * @since 2.0
      */
-    public DatastoreImpl(DatastoreImpl datastore) {
+    protected DatastoreImpl(DatastoreImpl datastore) {
         this.database = datastore.database;
         this.mongoClient = datastore.mongoClient;
         this.mapper = datastore.mapper;
@@ -342,7 +343,7 @@ public class DatastoreImpl implements AdvancedDatastore {
 
         Update<T> update;
         if (!options.unsetMissing()) {
-            update = query.update(dev.morphia.query.experimental.updates.UpdateOperators.set(entity));
+            update = query.update(set(entity));
         } else {
             update = ((MergingEncoder<T>) new MergingEncoder(query,
                 (MorphiaCodec) codecRegistry.get(entity.getClass())))
@@ -394,7 +395,7 @@ public class DatastoreImpl implements AdvancedDatastore {
             return List.of();
         }
 
-        Map<MongoCollection, List<T>> grouped = new LinkedHashMap<>();
+        Map<Class<?>, List<T>> grouped = new LinkedHashMap<>();
         List<T> list = new ArrayList<>();
         for (T entity : entities) {
             Class<?> type = entity.getClass();
@@ -403,13 +404,21 @@ public class DatastoreImpl implements AdvancedDatastore {
             if (getMapper().getId(entity) != null || model.getVersionProperty() != null) {
                 list.add(entity);
             } else {
-                grouped.computeIfAbsent(getCollection(type), c -> new ArrayList<>())
+                grouped.computeIfAbsent(type, c -> new ArrayList<>())
                        .add(entity);
             }
         }
 
-        for (Entry<MongoCollection, List<T>> entry : grouped.entrySet()) {
-            MongoCollection<T> collection = entry.getKey();
+        String alternate = options.collection();
+        if (grouped.size() > 1 && alternate != null) {
+            Sofia.logInsertManyAlternateCollection();
+        }
+
+        for (Entry<Class<?>, List<T>> entry : grouped.entrySet()) {
+            MongoCollection<T> collection = ((MongoCollection<T>) (alternate == null
+                                                                   ? getCollection(entry.getKey())
+                                                                   : getDatabase().getCollection(alternate, entry.getKey())));
+
             ClientSession clientSession = options.clientSession();
             if (clientSession == null) {
                 collection.insertMany(entry.getValue(), options.getOptions());
@@ -421,6 +430,7 @@ public class DatastoreImpl implements AdvancedDatastore {
         InsertOneOptions insertOneOptions = new InsertOneOptions()
             .bypassDocumentValidation(options.getBypassDocumentValidation())
             .clientSession(findSession(options))
+            .collection(alternate)
             .writeConcern(options.writeConcern());
         for (T entity : list) {
             save(entity, insertOneOptions);
@@ -586,6 +596,10 @@ public class DatastoreImpl implements AdvancedDatastore {
 
     private <T> void save(MongoCollection collection, T entity, InsertOneOptions options) {
         ClientSession clientSession = findSession(options);
+        String alternate = options.collection();
+        if (alternate != null) {
+            collection = getDatabase().getCollection(alternate, entity.getClass());
+        }
 
         Object id = mapper.findIdProperty(entity.getClass()).getValue(entity);
         VersionBumpInfo info = updateVersioning(entity);

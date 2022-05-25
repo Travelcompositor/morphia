@@ -5,7 +5,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.UpdateResult;
 import dev.morphia.Datastore;
 import dev.morphia.UpdateOptions;
-import dev.morphia.query.experimental.updates.UpdateOperator;
+import dev.morphia.mapping.codec.pojo.EntityModel;
+import dev.morphia.query.updates.UpdateOperator;
 import org.bson.Document;
 
 import java.util.List;
@@ -47,9 +48,22 @@ public class Update<T> extends UpdateBase<T> {
     public UpdateResult execute(UpdateOptions options) {
         Document updateOperations = toDocument();
         final Document queryObject = getQuery().toDocument();
+        if (options.isUpsert()) {
+            EntityModel entityModel = getDatastore().getMapper().getEntityModel(getQuery().getEntityClass());
+            if (entityModel.useDiscriminator()) {
+                queryObject.put(entityModel.getDiscriminatorKey(), entityModel.getDiscriminator());
+            }
+        }
 
         ClientSession session = getDatastore().findSession(options);
-        MongoCollection<T> mongoCollection = options.prepare(getCollection());
+        String alternate = options.collection();
+        MongoCollection<T> mongoCollection = alternate == null
+                                             ? getCollection()
+                                             : getDatastore()
+                                                   .getDatabase()
+                                                   .getCollection(alternate,
+                                                       getCollection().getDocumentClass());
+
         if (options.isMulti()) {
             return session == null ? mongoCollection.updateMany(queryObject, updateOperations, options)
                                    : mongoCollection.updateMany(session, queryObject, updateOperations, options);

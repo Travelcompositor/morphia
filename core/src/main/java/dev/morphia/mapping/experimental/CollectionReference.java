@@ -19,7 +19,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static dev.morphia.query.experimental.filters.Filters.in;
+import static dev.morphia.query.filters.Filters.in;
 import static java.util.Arrays.asList;
 
 /**
@@ -27,6 +27,7 @@ import static java.util.Arrays.asList;
  * @morphia.internal
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
+@Deprecated(forRemoval = true, since = "2.3")
 public abstract class CollectionReference<C extends Collection> extends MorphiaReference<C> {
     private EntityModel entityModel;
     private List ids;

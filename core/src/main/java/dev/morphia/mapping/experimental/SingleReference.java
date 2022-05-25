@@ -14,13 +14,14 @@ import org.bson.Document;
 
 import java.util.List;
 
-import static dev.morphia.query.experimental.filters.Filters.eq;
+import static dev.morphia.query.filters.Filters.eq;
 
 /**
  * @param <T>
  * @morphia.internal
  */
 @SuppressWarnings("unchecked")
+@Deprecated(forRemoval = true, since = "2.3")
 public class SingleReference<T> extends MorphiaReference<T> {
     private EntityModel entityModel;
     private Object id;

@@ -1,24 +1,9 @@
-/*
- * Copyright 2016 MongoDB, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package dev.morphia;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.client.ClientSession;
 import com.mongodb.lang.Nullable;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.internal.SessionConfigurable;
 import dev.morphia.internal.WriteConfigurable;
 
@@ -27,10 +12,12 @@ import dev.morphia.internal.WriteConfigurable;
  *
  * @since 1.3
  */
-public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>, WriteConfigurable<InsertManyOptions> {
+public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>, WriteConfigurable<InsertManyOptions>,
+                                              AlternateCollection<InsertManyOptions> {
     private com.mongodb.client.model.InsertManyOptions options = new com.mongodb.client.model.InsertManyOptions();
     private WriteConcern writeConcern = WriteConcern.ACKNOWLEDGED;
     private ClientSession clientSession;
+    private String collection;
 
     /**
      * Creates a new options wrapper
@@ -43,10 +30,12 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
      * @morphia.internal
      * @since 2.0
      */
+    @MorphiaInternal
     public InsertManyOptions(InsertManyOptions that) {
         this.options = that.options;
         this.writeConcern = that.writeConcern;
         this.clientSession = that.clientSession;
+        this.collection = that.collection;
     }
 
     /**
@@ -81,6 +70,18 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
         return clientSession;
     }
 
+    @Override
+    public InsertManyOptions collection(@Nullable String collection) {
+        this.collection = collection;
+        return this;
+    }
+
+    @Override
+    @Nullable
+    public String collection() {
+        return collection;
+    }
+
     /**
      * Gets whether to bypass document validation, or null if unspecified.  The default is null.
      *
@@ -105,6 +106,18 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
         return writeConcern;
     }
 
+    @Override
+    public InsertManyOptions writeConcern(@Nullable WriteConcern writeConcern) {
+        this.writeConcern = writeConcern;
+        return this;
+    }
+
+    @Override
+    @Nullable
+    public WriteConcern writeConcern() {
+        return writeConcern;
+    }
+
     /**
      * Gets whether the documents should be inserted in the order provided, stopping on the first failed insertion. The default is true.
      * If false, the server will attempt to insert all the documents regardless of an failures.
@@ -124,17 +137,5 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
     public InsertManyOptions ordered(boolean ordered) {
         options.ordered(ordered);
         return this;
-    }
-
-    @Override
-    public InsertManyOptions writeConcern(@Nullable WriteConcern writeConcern) {
-        this.writeConcern = writeConcern;
-        return this;
-    }
-
-    @Override
-    @Nullable
-    public WriteConcern writeConcern() {
-        return writeConcern;
     }
 }

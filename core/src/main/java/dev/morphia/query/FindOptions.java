@@ -25,6 +25,8 @@ import com.mongodb.client.ClientSession;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Collation;
 import com.mongodb.lang.Nullable;
+import dev.morphia.AlternateCollection;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.internal.PathTarget;
 import dev.morphia.internal.ReadConfigurable;
 import dev.morphia.internal.SessionConfigurable;
@@ -50,7 +52,8 @@ import static dev.morphia.internal.MorphiaInternals.tryInvoke;
  * @since 1.3
  */
 @SuppressWarnings("deprecation")
-public final class FindOptions implements SessionConfigurable<FindOptions>, ReadConfigurable<FindOptions> {
+public final class FindOptions implements SessionConfigurable<FindOptions>, ReadConfigurable<FindOptions>,
+                                              AlternateCollection<FindOptions> {
     private Boolean allowDiskUse;
     private int batchSize;
     private int limit;
@@ -75,6 +78,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     private Projection projection;
     private String queryLogId;
     private ClientSession clientSession;
+    private String collection;
 
     /**
      * Creates an instance with default values
@@ -190,6 +194,17 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
         return this;
     }
 
+    @Override
+    public FindOptions collection(String collection) {
+        this.collection = collection;
+        return this;
+    }
+
+    @Override
+    public String collection() {
+        return collection;
+    }
+
     /**
      * Sets the comment to log with the query
      *
@@ -218,6 +233,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     public FindOptions copy(FindOptions original) {
         this.allowDiskUse = original.allowDiskUse;
         this.batchSize = original.batchSize;
+        this.collection = original.collection;
         this.limit = original.limit;
         this.maxTimeMS = original.maxTimeMS;
         this.maxAwaitTimeMS = original.maxAwaitTimeMS;
@@ -424,28 +440,28 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     @Override
     public String toString() {
         return new StringJoiner(", ", FindOptions.class.getSimpleName() + "[", "]")
-                   .add("allowDiskUse=" + allowDiskUse)
-                   .add("batchSize=" + batchSize)
-                   .add("limit=" + limit)
-                   .add("maxTimeMS=" + maxTimeMS)
-                   .add("maxAwaitTimeMS=" + maxAwaitTimeMS)
-                   .add("skip=" + skip)
-                   .add("sort=" + sort)
-                   .add("cursorType=" + cursorType)
-                   .add("noCursorTimeout=" + noCursorTimeout)
-                   .add("oplogReplay=" + oplogReplay)
-                   .add("partial=" + partial)
-                   .add("collation=" + collation)
-                   .add("comment='" + comment + "'")
-                   .add("hint=" + hint)
-                   .add("max=" + max)
-                   .add("min=" + min)
-                   .add("returnKey=" + returnKey)
-                   .add("showRecordId=" + showRecordId)
-                   .add("readPreference=" + readPreference)
-                   .add("queryLogId='" + queryLogId + "'")
-                   .add("projection=" + projection)
-                   .toString();
+            .add("allowDiskUse=" + allowDiskUse)
+            .add("batchSize=" + batchSize)
+            .add("limit=" + limit)
+            .add("maxTimeMS=" + maxTimeMS)
+            .add("maxAwaitTimeMS=" + maxAwaitTimeMS)
+            .add("skip=" + skip)
+            .add("sort=" + sort)
+            .add("cursorType=" + cursorType)
+            .add("noCursorTimeout=" + noCursorTimeout)
+            .add("oplogReplay=" + oplogReplay)
+            .add("partial=" + partial)
+            .add("collation=" + collation)
+            .add("comment='" + comment + "'")
+            .add("hint=" + hint)
+            .add("max=" + max)
+            .add("min=" + min)
+            .add("returnKey=" + returnKey)
+            .add("showRecordId=" + showRecordId)
+            .add("readPreference=" + readPreference)
+            .add("queryLogId='" + queryLogId + "'")
+            .add("projection=" + projection)
+            .toString();
     }
 
     /**
@@ -493,11 +509,12 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     }
 
     /**
-     * This is an experimental method.  It's implementation and presence are subject to change.
+     * This is an internal method.  It's implementation and presence are subject to change.
      *
      * @return this
      * @morphia.internal
      */
+    @MorphiaInternal
     public boolean isLogQuery() {
         return queryLogId != null;
     }
