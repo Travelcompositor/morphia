@@ -110,7 +110,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.4.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <!--                    <excludePackageNames>*.internal, dev.morphia.sofia</excludePackageNames>-->
@@ -155,12 +155,12 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.141</version>
+            <version>4.8.147</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.8</version>
+            <version>1.12.10</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -175,7 +175,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.6.0</version>
+            <version>4.7.0</version>
             <scope>compile</scope>
         </dependency>
 

@@ -40,24 +40,25 @@
     <properties>
         <awaitility.version>1.7.0</awaitility.version>
         <bottlerocket.version>0.31.0</bottlerocket.version>
-        <dokka.version>1.6.10</dokka.version>
-        <driver.version>4.5.0</driver.version>
+        <dokka.version>1.6.21</dokka.version>
+        <driver.version>4.6.0</driver.version>
         <json.assert.version>1.5.0</json.assert.version>
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
-        <kotlin.version>1.6.10</kotlin.version>
+        <kotlin.version>1.6.21</kotlin.version>
         <maven.version>3.8.5</maven.version>
         <revapi.maven.plugin.version>0.14.6</revapi.maven.plugin.version>
         <revapi.java.version>0.26.1</revapi.java.version>
-        <roaster.version>2.23.2.Final</roaster.version>
+        <roaster.version>2.25.0.Final</roaster.version>
         <slf4j.version>1.7.36</slf4j.version>
         <sofia.version>0.23</sofia.version>
-        <surefire.version>3.0.0-M5</surefire.version>
-        <testng.version>7.5</testng.version>
+        <surefire.version>3.0.0-M6</surefire.version>
+        <testng.version>7.6.0</testng.version>
         <zt.exec.version>1.12</zt.exec.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <downloadSources>true</downloadSources>
         <nexus.url>https://oss.sonatype.org</nexus.url>
+        <local.repository.path>target/localRepo</local.repository.path>
     </properties>
 
     <dependencyManagement>
@@ -155,7 +156,7 @@
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.12</version>
+                    <version>1.6.13</version>
                     <configuration>
                         <serverId>central</serverId>
                         <nexusUrl>${nexus.url}</nexusUrl>
@@ -170,7 +171,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>10.0</version>
+                            <version>10.3</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -192,12 +193,12 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.5.3.0</version>
+                    <version>4.7.0.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>com.github.spotbugs</groupId>
                             <artifactId>spotbugs</artifactId>
-                            <version>4.6.0</version>
+                            <version>4.7.0</version>
                             <type>pom</type>
                         </dependency>
                     </dependencies>
@@ -278,17 +279,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.12.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>3.3.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -365,7 +366,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.3.2</version>
+                        <version>3.4.0</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -443,7 +444,7 @@
                         <plugin>
                             <groupId>org.sonatype.plugins</groupId>
                             <artifactId>nexus-staging-maven-plugin</artifactId>
-                            <version>1.6.12</version>
+                            <version>1.6.13</version>
                             <extensions>true</extensions>
                             <configuration>
                                 <serverId>central</serverId>
@@ -475,7 +476,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-clean-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.2.0</version>
                         <inherited>false</inherited>
                         <configuration>
                             <filesets>
@@ -488,7 +489,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>3.1.0</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
