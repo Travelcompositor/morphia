@@ -1,22 +1,20 @@
 package dev.morphia;
 
 import com.mongodb.WriteConcern;
-import com.mongodb.client.ClientSession;
 import com.mongodb.lang.Nullable;
 import dev.morphia.annotations.internal.MorphiaInternal;
-import dev.morphia.internal.SessionConfigurable;
+import dev.morphia.internal.CollectionConfigurable;
 import dev.morphia.internal.WriteConfigurable;
+import org.bson.BsonValue;
 
 /**
  * Options related to insertion of documents into MongoDB.  The setter methods return {@code this} so that a chaining style can be used.
  *
  * @since 1.3
  */
-public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>, WriteConfigurable<InsertManyOptions>,
-                                              AlternateCollection<InsertManyOptions> {
+public class InsertManyOptions implements WriteConfigurable<InsertManyOptions>, CollectionConfigurable<InsertManyOptions> {
     private com.mongodb.client.model.InsertManyOptions options = new com.mongodb.client.model.InsertManyOptions();
     private WriteConcern writeConcern = WriteConcern.ACKNOWLEDGED;
-    private ClientSession clientSession;
     private String collection;
 
     /**
@@ -34,7 +32,6 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
     public InsertManyOptions(InsertManyOptions that) {
         this.options = that.options;
         this.writeConcern = that.writeConcern;
-        this.clientSession = that.clientSession;
         this.collection = that.collection;
     }
 
@@ -48,26 +45,6 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
     public InsertManyOptions bypassDocumentValidation(Boolean bypassDocumentValidation) {
         options.bypassDocumentValidation(bypassDocumentValidation);
         return this;
-    }
-
-    /**
-     * Set the client session to use for the insert.
-     *
-     * @param clientSession the client session
-     * @return this
-     */
-    public InsertManyOptions clientSession(@Nullable ClientSession clientSession) {
-        this.clientSession = clientSession;
-        return this;
-    }
-
-    /**
-     * The client session to use for the insertion.
-     *
-     * @return the client session
-     */
-    public ClientSession clientSession() {
-        return clientSession;
     }
 
     @Override
@@ -89,21 +66,42 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
      * @mongodb.server.release 3.2
      */
     @Nullable
-    public Boolean getBypassDocumentValidation() {
+    public Boolean bypassDocumentValidation() {
         return options.getBypassDocumentValidation();
     }
 
     /**
-     * @return the driver version of this instance
+     * @param comment the comment
+     * @return this
+     * @see com.mongodb.client.model.InsertManyOptions#comment(String)
+     * @since 2.3
      */
-    public com.mongodb.client.model.InsertManyOptions getOptions() {
-        return options;
+    public InsertManyOptions comment(String comment) {
+        options.comment(comment);
+        return this;
     }
 
-    @Override
-    @Deprecated(since = "2.0", forRemoval = true)
-    public WriteConcern getWriteConcern() {
-        return writeConcern;
+    /**
+     * @param comment the comment
+     * @return this
+     * @see com.mongodb.client.model.InsertManyOptions#comment(BsonValue)
+     * @since 2.3
+     */
+    public InsertManyOptions comment(BsonValue comment) {
+        options.comment(comment);
+        return this;
+    }
+
+    /**
+     * Gets whether to bypass document validation, or null if unspecified.  The default is null.
+     *
+     * @return whether to bypass document validation, or null if unspecified.
+     * @mongodb.server.release 3.2
+     */
+    @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
+    public Boolean getBypassDocumentValidation() {
+        return options.getBypassDocumentValidation();
     }
 
     @Override
@@ -119,13 +117,32 @@ public class InsertManyOptions implements SessionConfigurable<InsertManyOptions>
     }
 
     /**
+     * @return the driver version of this instance
+     */
+    @Deprecated(forRemoval = true, since = "2.3")
+    public com.mongodb.client.model.InsertManyOptions getOptions() {
+        return options;
+    }
+
+    /**
      * Gets whether the documents should be inserted in the order provided, stopping on the first failed insertion. The default is true.
      * If false, the server will attempt to insert all the documents regardless of an failures.
      *
      * @return whether the the documents should be inserted in order
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public boolean isOrdered() {
         return options.isOrdered();
+    }
+
+    /**
+     * @return the driver version of this instance
+     * @morphia.internal
+     * @since 2.3
+     */
+    @MorphiaInternal
+    public com.mongodb.client.model.InsertManyOptions options() {
+        return options;
     }
 
     /**

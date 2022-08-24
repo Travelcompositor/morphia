@@ -1,8 +1,7 @@
 package dev.morphia.test;
 
+import com.antwerkz.bottlerocket.clusters.ClusterBuilder;
 import com.antwerkz.bottlerocket.clusters.MongoCluster;
-import com.antwerkz.bottlerocket.clusters.ReplicaSet;
-import com.antwerkz.bottlerocket.clusters.SingleNode;
 import com.antwerkz.bottlerocket.configuration.types.Verbosity;
 import com.github.zafarkhaja.semver.Version;
 import com.mongodb.MongoClientSettings;
@@ -15,6 +14,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.lang.NonNull;
 import dev.morphia.Datastore;
+import dev.morphia.DatastoreImpl;
 import dev.morphia.Morphia;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.MapperOptions;
@@ -45,8 +45,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.antwerkz.bottlerocket.clusters.ClusterType.REPLICA_SET;
 import static dev.morphia.internal.MorphiaInternals.proxyClassesPresent;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
@@ -59,7 +61,7 @@ public abstract class TestBase {
 
     private MapperOptions mapperOptions;
     private MongoDatabase database;
-    private Datastore datastore;
+    private DatastoreImpl datastore;
 
     public TestBase() {
         mapperOptions = MapperOptions.DEFAULT;
@@ -87,9 +89,9 @@ public abstract class TestBase {
         return database;
     }
 
-    public Datastore getDs() {
+    public DatastoreImpl getDs() {
         if (datastore == null) {
-            datastore = Morphia.createDatastore(getMongoClient(), TEST_DB_NAME, mapperOptions);
+            datastore = (DatastoreImpl) Morphia.createDatastore(getMongoClient(), TEST_DB_NAME, mapperOptions);
         }
         return datastore;
     }
@@ -310,6 +312,13 @@ public abstract class TestBase {
         return document.toJson(getDs().getCodecRegistry().get(Document.class));
     }
 
+    protected void withClient(MongoClient client, Consumer<Datastore> block) {
+        MapperOptions previousOptions = mapperOptions;
+        try (client) {
+            block.accept(Morphia.createDatastore(client, TEST_DB_NAME));
+        }
+    }
+
     protected void withOptions(MapperOptions options, Runnable block) {
         MapperOptions previousOptions = mapperOptions;
         try {
@@ -402,13 +411,8 @@ public abstract class TestBase {
 
     private void startMongo() {
         String mongodb = System.getenv("MONGODB");
-        Builder builder = MongoClientSettings.builder();
-
-        try {
-            builder.uuidRepresentation(mapperOptions.getUuidRepresentation());
-        } catch (Exception ignored) {
-            // not a 4.0 driver
-        }
+        Builder builder = MongoClientSettings.builder()
+                                             .uuidRepresentation(mapperOptions.getUuidRepresentation());
 
         if (mongodb != null) {
             File mongodbRoot = new File("target/mongo");
@@ -418,9 +422,11 @@ public abstract class TestBase {
                 throw new RuntimeException(e.getMessage(), e);
             }
             Version version = Version.valueOf(mongodb);
-            final MongoCluster cluster = version.lessThan(Version.valueOf("4.0.0"))
-                                         ? new SingleNode(mongodbRoot, "morphia_test", version)
-                                         : new ReplicaSet(mongodbRoot, "morphia_test", version);
+            final MongoCluster cluster = new ClusterBuilder(REPLICA_SET)
+                                             .baseDir(mongodbRoot)
+                                             .name("morphia_test")
+                                             .version(version)
+                                             .build();
 
             cluster.configure(c -> {
                 c.systemLog(s -> {

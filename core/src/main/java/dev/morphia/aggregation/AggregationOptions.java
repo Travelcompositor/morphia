@@ -4,13 +4,11 @@ import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Collation;
 import com.mongodb.lang.Nullable;
 import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.internal.ReadConfigurable;
-import dev.morphia.internal.SessionConfigurable;
 import dev.morphia.internal.WriteConfigurable;
 import org.bson.Document;
 
@@ -21,14 +19,12 @@ import java.util.concurrent.TimeUnit;
  * Defines options to be applied to an aggregation pipeline.
  */
 @SuppressWarnings("unused")
-public class AggregationOptions implements SessionConfigurable<AggregationOptions>, ReadConfigurable<AggregationOptions>,
-                                               WriteConfigurable<AggregationOptions> {
+public class AggregationOptions implements ReadConfigurable<AggregationOptions>, WriteConfigurable<AggregationOptions> {
     private boolean allowDiskUse;
     private Integer batchSize;
     private boolean bypassDocumentValidation;
     private Collation collation;
     private Long maxTimeMS;
-    private ClientSession clientSession;
     private ReadPreference readPreference;
     private ReadConcern readConcern;
     private WriteConcern writeConcern;
@@ -37,6 +33,7 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     /**
      * @return the configuration value
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public boolean allowDiskUse() {
         return allowDiskUse;
     }
@@ -64,8 +61,7 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
      * @morphia.internal
      */
     @MorphiaInternal
-    public <S, T> AggregateIterable<S> apply(List<Document> documents, MongoCollection<T> collection,
-                                             Class<S> resultType) {
+    public <S, T> AggregateIterable<S> apply(List<Document> documents, MongoCollection<T> collection, Class<S> resultType) {
         MongoCollection<T> bound = collection;
         if (readConcern != null) {
             bound = bound.withReadConcern(readConcern);
@@ -83,7 +79,7 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
             aggregate.collation(collation);
         }
         if (maxTimeMS != null) {
-            aggregate.maxTime(getMaxTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+            aggregate.maxTime(maxTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
         }
         if (hint != null) {
             aggregate.hint(hint);
@@ -95,6 +91,7 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     /**
      * @return the configuration value
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public int batchSize() {
         return batchSize;
     }
@@ -113,6 +110,7 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     /**
      * @return the configuration value
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public boolean bypassDocumentValidation() {
         return bypassDocumentValidation;
     }
@@ -131,20 +129,10 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
         return this;
     }
 
-    @Override
-    public AggregationOptions clientSession(ClientSession clientSession) {
-        this.clientSession = clientSession;
-        return this;
-    }
-
-    @Override
-    public ClientSession clientSession() {
-        return clientSession;
-    }
-
     /**
      * @return the configuration value
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public Collation collation() {
         return collation;
     }
@@ -163,69 +151,36 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     }
 
     /**
-     * @return the configuration value
+     * @return the hint for which index to use. A null value means no hint is set.
+     * @mongodb.server.release 3.6
+     * @since 2.0
      */
-    public boolean getAllowDiskUse() {
-        return allowDiskUse;
-    }
-
-    /**
-     * @return the configuration value
-     */
-    public int getBatchSize() {
-        return batchSize;
-    }
-
-    /**
-     * @return the configuration value
-     */
-    public boolean getBypassDocumentValidation() {
-        return bypassDocumentValidation;
-    }
-
-    /**
-     * @return the configuration value
-     */
-    public Collation getCollation() {
-        return collation;
+    @Deprecated(forRemoval = true, since = "2.3")
+    public Document hint() {
+        return hint;
     }
 
     /**
      * @param unit the target unit type
      * @return the configuration value
      */
-    public long getMaxTime(TimeUnit unit) {
+    public long maxTime(TimeUnit unit) {
         return unit.convert(maxTimeMS, TimeUnit.MILLISECONDS);
     }
 
     /**
      * @return the configuration value
      */
-    public long getMaxTimeMS() {
+    @Deprecated(forRemoval = true, since = "2.3")
+    public long maxTimeMS() {
         return maxTimeMS;
     }
 
     /**
      * @return the configuration value
      */
-    public ReadConcern getReadConcern() {
+    public ReadConcern readConcern() {
         return readConcern;
-    }
-
-    /**
-     * @return the configuration value
-     */
-    public ReadPreference getReadPreference() {
-        return readPreference;
-    }
-
-    /**
-     * @return the hint for which index to use. A null value means no hint is set.
-     * @mongodb.server.release 3.6
-     * @since 2.0
-     */
-    public Document hint() {
-        return hint;
     }
 
     /**
@@ -239,25 +194,6 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     public AggregationOptions hint(String hint) {
         this.hint = new Document("hint", hint);
         return this;
-    }
-
-    @Override
-    public <C> MongoCollection<C> prepare(MongoCollection<C> collection) {
-        MongoCollection<C> updated = collection;
-        WriteConcern writeConcern = writeConcern();
-        if (writeConcern != null) {
-            updated = updated.withWriteConcern(writeConcern);
-        }
-        ReadConcern readConcern = getReadConcern();
-        if (readConcern != null) {
-            updated = updated.withReadConcern(readConcern);
-        }
-        ReadPreference readPreference = getReadPreference();
-        if (readPreference != null) {
-            updated = updated.withReadPreference(readPreference);
-        }
-
-        return updated;
     }
 
     /**
@@ -285,8 +221,8 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     /**
      * @return the configuration value
      */
-    public long maxTimeMS() {
-        return maxTimeMS;
+    public ReadPreference readPreference() {
+        return readPreference;
     }
 
     /**
@@ -299,20 +235,6 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     public AggregationOptions maxTimeMS(long maxTimeMS) {
         this.maxTimeMS = maxTimeMS;
         return this;
-    }
-
-    /**
-     * @return the configuration value
-     */
-    public ReadConcern readConcern() {
-        return readConcern;
-    }
-
-    /**
-     * @return the configuration value
-     */
-    public ReadPreference readPreference() {
-        return readPreference;
     }
 
     /**
@@ -332,5 +254,21 @@ public class AggregationOptions implements SessionConfigurable<AggregationOption
     @Nullable
     public WriteConcern writeConcern() {
         return writeConcern;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder("AggregationOptions{")
+                   .append("allowDiskUse=").append(allowDiskUse)
+                   .append(", batchSize=").append(batchSize)
+                   .append(", bypassDocumentValidation=").append(bypassDocumentValidation)
+                   .append(", collation=").append(collation)
+                   .append(", maxTimeMS=").append(maxTimeMS)
+                   .append(", readPreference=").append(readPreference)
+                   .append(", readConcern=").append(readConcern)
+                   .append(", writeConcern=").append(writeConcern)
+                   .append(", hint=").append(hint)
+                   .append('}')
+                   .toString();
     }
 }

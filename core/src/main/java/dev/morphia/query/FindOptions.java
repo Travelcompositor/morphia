@@ -21,18 +21,18 @@ import com.mongodb.DBObject;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.assertions.Assertions;
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Collation;
 import com.mongodb.lang.Nullable;
-import dev.morphia.AlternateCollection;
 import dev.morphia.annotations.internal.MorphiaInternal;
+import dev.morphia.internal.CollectionConfigurable;
 import dev.morphia.internal.PathTarget;
 import dev.morphia.internal.ReadConfigurable;
-import dev.morphia.internal.SessionConfigurable;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.codec.pojo.EntityModel;
 import dev.morphia.sofia.Sofia;
+import org.bson.BsonString;
+import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -52,21 +52,21 @@ import static dev.morphia.internal.MorphiaInternals.tryInvoke;
  * @since 1.3
  */
 @SuppressWarnings("deprecation")
-public final class FindOptions implements SessionConfigurable<FindOptions>, ReadConfigurable<FindOptions>,
-                                              AlternateCollection<FindOptions> {
+public final class FindOptions implements ReadConfigurable<FindOptions>, CollectionConfigurable<FindOptions> {
     private Boolean allowDiskUse;
     private int batchSize;
     private int limit;
     private long maxTimeMS;
     private long maxAwaitTimeMS;
     private int skip;
+    private Document variables;
     private Document sort;
     private CursorType cursorType;
     private boolean noCursorTimeout;
     private boolean oplogReplay;
     private boolean partial;
     private Collation collation;
-    private String comment;
+    private BsonValue comment;
     private Document hint;
     private String hintString;
     private Document max;
@@ -77,7 +77,6 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     private ReadPreference readPreference;
     private Projection projection;
     private String queryLogId;
-    private ClientSession clientSession;
     private String collection;
 
     /**
@@ -147,6 +146,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
             }
             iterable.sort(mapped);
         }
+        iterable.let(variables);
         return iterable;
     }
 
@@ -159,28 +159,6 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     public FindOptions batchSize(int batchSize) {
         this.batchSize = batchSize;
         return this;
-    }
-
-    /**
-     * Set the client session to use for the insert.
-     *
-     * @param clientSession the client session
-     * @return this
-     * @since 2.0
-     */
-    public FindOptions clientSession(ClientSession clientSession) {
-        this.clientSession = clientSession;
-        return this;
-    }
-
-    /**
-     * The client session to use for the insertion.
-     *
-     * @return the client session
-     * @since 2.0
-     */
-    public ClientSession clientSession() {
-        return clientSession;
     }
 
     /**
@@ -212,6 +190,17 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return this
      */
     public FindOptions comment(String comment) {
+        this.comment = new BsonString(comment);
+        return this;
+    }
+
+    /**
+     * Sets the comment to log with the query
+     *
+     * @param comment the comment
+     * @return this
+     */
+    public FindOptions comment(BsonValue comment) {
         this.comment = comment;
         return this;
     }
@@ -255,7 +244,6 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
         this.readPreference = original.readPreference;
         this.projection = original.projection;
         this.queryLogId = original.queryLogId;
-        this.clientSession = original.clientSession;
 
         return this;
     }
@@ -272,8 +260,20 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     }
 
     /**
+     * @return the cursor type
+     * @morphia.internal
+     * @since 2.3
+     */
+    @Nullable
+    @MorphiaInternal
+    public CursorType cursorType() {
+        return cursorType;
+    }
+
+    /**
      * @return true is disk use is allowed
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public Boolean getAllowDiskUse() {
         return allowDiskUse;
     }
@@ -281,6 +281,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     /**
      * @return the batch size
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public int getBatchSize() {
         return this.batchSize;
     }
@@ -289,6 +290,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return the collation
      */
     @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
     public Collation getCollation() {
         return this.collation;
     }
@@ -297,14 +299,16 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return the comment
      */
     @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
     public String getComment() {
-        return this.comment;
+        return this.comment.toString();
     }
 
     /**
      * @return the cursor type
      */
     @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
     public CursorType getCursorType() {
         return this.cursorType;
     }
@@ -313,6 +317,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return the index hint
      */
     @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
     public Document getHint() {
         return this.hint;
     }
@@ -320,6 +325,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     /**
      * @return the limit
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public int getLimit() {
         return this.limit;
     }
@@ -328,6 +334,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return the max value
      */
     @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
     public Document getMax() {
         return this.max;
     }
@@ -336,6 +343,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @param timeUnit the time unit to apply
      * @return the max await time for the operation
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public long getMaxAwaitTime(TimeUnit timeUnit) {
         Assertions.notNull("timeUnit", timeUnit);
         return timeUnit.convert(this.maxAwaitTimeMS, TimeUnit.MILLISECONDS);
@@ -345,6 +353,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @param timeUnit the time unit to apply
      * @return the max time for the operation
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public long getMaxTime(TimeUnit timeUnit) {
         Assertions.notNull("timeUnit", timeUnit);
         return timeUnit.convert(this.maxTimeMS, TimeUnit.MILLISECONDS);
@@ -354,12 +363,14 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return the min value
      */
     @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
     public Document getMin() {
         return this.min;
     }
 
     /**
      * @return the projection
+     * @morphia.internal
      */
     @Nullable
     public Projection getProjection() {
@@ -370,35 +381,15 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return the query log id used for retrieving the logged query
      * @morphia.internal
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public String getQueryLogId() {
         return queryLogId;
-    }
-
-    @Override
-    public ReadConcern getReadConcern() {
-        return readConcern;
-    }
-
-    @Override
-    public ReadPreference getReadPreference() {
-        return readPreference;
-    }
-
-    @Override
-    public FindOptions readConcern(ReadConcern readConcern) {
-        this.readConcern = readConcern;
-        return this;
-    }
-
-    @Override
-    public FindOptions readPreference(ReadPreference readPreference) {
-        this.readPreference = readPreference;
-        return this;
     }
 
     /**
      * @return the skip count
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public int getSkip() {
         return this.skip;
     }
@@ -407,6 +398,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
      * @return the sort criteria
      */
     @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
     public Document getSort() {
         return this.sort;
     }
@@ -415,7 +407,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     public int hashCode() {
         return Objects.hash(allowDiskUse, batchSize, limit, maxTimeMS, maxAwaitTimeMS, skip, sort, cursorType, noCursorTimeout, oplogReplay,
             partial, collation, comment, hint, hintString, max, min, returnKey, showRecordId, readConcern, readPreference, projection,
-            queryLogId, clientSession);
+            queryLogId);
     }
 
     @Override
@@ -434,34 +426,15 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
                && Objects.equals(comment, that.comment) && Objects.equals(hint, that.hint) && Objects.equals(hintString, that.hintString)
                && Objects.equals(max, that.max) && Objects.equals(min, that.min) && Objects.equals(readConcern, that.readConcern)
                && Objects.equals(readPreference, that.readPreference) && Objects.equals(projection, that.projection)
-               && Objects.equals(queryLogId, that.queryLogId) && Objects.equals(clientSession, that.clientSession);
+               && Objects.equals(queryLogId, that.queryLogId);
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", FindOptions.class.getSimpleName() + "[", "]")
-            .add("allowDiskUse=" + allowDiskUse)
-            .add("batchSize=" + batchSize)
-            .add("limit=" + limit)
-            .add("maxTimeMS=" + maxTimeMS)
-            .add("maxAwaitTimeMS=" + maxAwaitTimeMS)
-            .add("skip=" + skip)
-            .add("sort=" + sort)
-            .add("cursorType=" + cursorType)
-            .add("noCursorTimeout=" + noCursorTimeout)
-            .add("oplogReplay=" + oplogReplay)
-            .add("partial=" + partial)
-            .add("collation=" + collation)
-            .add("comment='" + comment + "'")
-            .add("hint=" + hint)
-            .add("max=" + max)
-            .add("min=" + min)
-            .add("returnKey=" + returnKey)
-            .add("showRecordId=" + showRecordId)
-            .add("readPreference=" + readPreference)
-            .add("queryLogId='" + queryLogId + "'")
-            .add("projection=" + projection)
-            .toString();
+    /**
+     * @return is the cursor timeout enabled
+     */
+    @Deprecated(forRemoval = true, since = "2.3")
+    public boolean isNoCursorTimeout() {
+        return this.noCursorTimeout;
     }
 
     /**
@@ -520,15 +493,9 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     }
 
     /**
-     * @return is the cursor timeout enabled
-     */
-    public boolean isNoCursorTimeout() {
-        return this.noCursorTimeout;
-    }
-
-    /**
      * @return is oplog replay enabled
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public boolean isOplogReplay() {
         return this.oplogReplay;
     }
@@ -536,6 +503,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     /**
      * @return are partial results enabled
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public boolean isPartial() {
         return this.partial;
     }
@@ -543,6 +511,7 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     /**
      * @return is return key only enabled
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public boolean isReturnKey() {
         return this.returnKey;
     }
@@ -550,8 +519,32 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     /**
      * @return is showing the record id enabled
      */
+    @Deprecated(forRemoval = true, since = "2.3")
     public boolean isShowRecordId() {
         return this.showRecordId;
+    }
+
+    /**
+     * Add top-level variables to the operation. A null value means no variables are set.
+     *
+     * <p>Allows for improved command readability by separating the variables from the query text.</p>
+     *
+     * @param variables for find operation or null
+     * @return this
+     * @since 2.3
+     */
+    public FindOptions let(Document variables) {
+        this.variables = new Document(variables);
+        return this;
+    }
+
+    /**
+     * @return the query log id used for retrieving the logged query
+     * @morphia.internal
+     */
+    @MorphiaInternal
+    public String queryLogId() {
+        return queryLogId;
     }
 
     /**
@@ -691,6 +684,39 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
         return projection;
     }
 
+    @Override
+    public ReadConcern readConcern() {
+        return readConcern;
+    }
+
+    @Override
+    public ReadPreference readPreference() {
+        return readPreference;
+    }
+
+    @Override
+    public FindOptions readConcern(ReadConcern readConcern) {
+        this.readConcern = readConcern;
+        return this;
+    }
+
+    @Override
+    public FindOptions readPreference(ReadPreference readPreference) {
+        this.readPreference = readPreference;
+        return this;
+    }
+
+    /**
+     * @return the sort criteria
+     * @morphia.internal
+     */
+    @Nullable
+    @Deprecated(forRemoval = true, since = "2.3")
+    @MorphiaInternal
+    public Document sort() {
+        return this.sort;
+    }
+
     /**
      * Sets if only the key value should be returned
      *
@@ -722,6 +748,33 @@ public final class FindOptions implements SessionConfigurable<FindOptions>, Read
     public FindOptions skip(int skip) {
         this.skip = skip;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", FindOptions.class.getSimpleName() + "[", "]")
+                   .add("allowDiskUse=" + allowDiskUse)
+                   .add("batchSize=" + batchSize)
+                   .add("limit=" + limit)
+                   .add("maxTimeMS=" + maxTimeMS)
+                   .add("maxAwaitTimeMS=" + maxAwaitTimeMS)
+                   .add("skip=" + skip)
+                   .add("sort=" + sort)
+                   .add("cursorType=" + cursorType)
+                   .add("noCursorTimeout=" + noCursorTimeout)
+                   .add("oplogReplay=" + oplogReplay)
+                   .add("partial=" + partial)
+                   .add("collation=" + collation)
+                   .add("comment='" + comment + "'")
+                   .add("hint=" + hint)
+                   .add("max=" + max)
+                   .add("min=" + min)
+                   .add("returnKey=" + returnKey)
+                   .add("showRecordId=" + showRecordId)
+                   .add("readPreference=" + readPreference)
+                   .add("queryLogId='" + queryLogId + "'")
+                   .add("projection=" + projection)
+                   .toString();
     }
 
     /**

@@ -83,7 +83,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>copy-license</id>
@@ -110,13 +110,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.4.1</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <!--                    <excludePackageNames>*.internal, dev.morphia.sofia</excludePackageNames>-->
                     <excludePackageNames>dev.morphia.sofia,dev.morphia.annotations.builders</excludePackageNames>
                     <doclint>none</doclint>
                     <doctitle>Morphia ${project.version}</doctitle>
+                    <links>
+                        <link>https://mongodb.github.io/mongo-java-driver/${driver.minor.version}/apidocs/mongodb-driver-core</link>
+                        <link>https://mongodb.github.io/mongo-java-driver/${driver.minor.version}/apidocs/bson</link>
+                        <link>https://mongodb.github.io/mongo-java-driver/${driver.minor.version}/apidocs/mongodb-driver-sync</link>
+                    </links>
                     <windowtitle>Morphia</windowtitle>
                     <tagletArtifacts>
                         <tagletArtifact>
@@ -155,12 +160,12 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.147</version>
+            <version>4.8.149</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.10</version>
+            <version>1.12.13</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -175,7 +180,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.7.0</version>
+            <version>4.7.1</version>
             <scope>compile</scope>
         </dependency>
 
@@ -203,7 +208,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
-            <version>3.8.5</version>
+            <version>3.8.6</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

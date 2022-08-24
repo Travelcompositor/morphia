@@ -1,13 +1,12 @@
 package dev.morphia.query;
 
 import com.mongodb.WriteConcern;
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.lang.Nullable;
-import dev.morphia.AlternateCollection;
-import dev.morphia.internal.SessionConfigurable;
+import dev.morphia.internal.CollectionConfigurable;
 import dev.morphia.internal.WriteConfigurable;
+import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -16,23 +15,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Defines options to use for find and delete operations
  */
-public class FindAndDeleteOptions extends FindOneAndDeleteOptions implements SessionConfigurable<FindAndDeleteOptions>,
-                                                                                 WriteConfigurable<FindAndDeleteOptions>,
-                                                                                 AlternateCollection<FindAndDeleteOptions> {
+public class FindAndDeleteOptions extends FindOneAndDeleteOptions implements WriteConfigurable<FindAndDeleteOptions>,
+                                                                                 CollectionConfigurable<FindAndDeleteOptions> {
     private WriteConcern writeConcern = WriteConcern.ACKNOWLEDGED;
-    private ClientSession clientSession;
     private String collection;
-
-    @Override
-    public FindAndDeleteOptions clientSession(ClientSession clientSession) {
-        this.clientSession = clientSession;
-        return this;
-    }
-
-    @Override
-    public ClientSession clientSession() {
-        return clientSession;
-    }
 
     @Override
     public FindAndDeleteOptions collection(String collection) {
@@ -43,6 +29,30 @@ public class FindAndDeleteOptions extends FindOneAndDeleteOptions implements Ses
     @Override
     public String collection() {
         return collection;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public FindAndDeleteOptions comment(String comment) {
+        super.comment(comment);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public FindAndDeleteOptions comment(BsonValue comment) {
+        super.comment(comment);
+        return this;
     }
 
     /**
@@ -99,6 +109,18 @@ public class FindAndDeleteOptions extends FindOneAndDeleteOptions implements Ses
      */
     public FindAndDeleteOptions hintString(@Nullable String hint) {
         super.hintString(hint);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public FindAndDeleteOptions let(Bson variables) {
+        super.let(variables);
         return this;
     }
 

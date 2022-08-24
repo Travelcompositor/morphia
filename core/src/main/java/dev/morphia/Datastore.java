@@ -1,9 +1,7 @@
 package dev.morphia;
 
 import com.mongodb.ClientSessionOptions;
-import com.mongodb.DBCollection;
 import com.mongodb.WriteConcern;
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReturnDocument;
@@ -15,8 +13,8 @@ import dev.morphia.annotations.Indexed;
 import dev.morphia.annotations.Indexes;
 import dev.morphia.annotations.Text;
 import dev.morphia.annotations.Validation;
+import dev.morphia.annotations.internal.MorphiaExperimental;
 import dev.morphia.annotations.internal.MorphiaInternal;
-import dev.morphia.internal.SessionConfigurable;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.query.FindAndDeleteOptions;
 import dev.morphia.query.FindOptions;
@@ -38,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings({"UnusedReturnValue", "unused", "removal"})
 public interface Datastore {
     /**
-     * Returns a new query bound to the kind (a specific {@link DBCollection})
+     * Returns a new query bound to the kind (a specific {@link MongoCollection})
      *
      * @param source The collection aggregation against
      * @return the aggregation pipeline
@@ -47,7 +45,7 @@ public interface Datastore {
     Aggregation<Document> aggregate(String source);
 
     /**
-     * Returns a new query bound to the kind (a specific {@link DBCollection})
+     * Returns a new query bound to the kind (a specific {@link MongoCollection})
      *
      * @param source The class to create aggregation against
      * @param <T>    the source type
@@ -57,7 +55,7 @@ public interface Datastore {
     <T> Aggregation<T> aggregate(Class<T> source);
 
     /**
-     * Returns a new query bound to the kind (a specific {@link DBCollection})
+     * Returns a new query bound to the kind (a specific {@link MongoCollection})
      *
      * @param source The class to create aggregation against
      * @return the aggregation pipeline
@@ -68,7 +66,7 @@ public interface Datastore {
     dev.morphia.aggregation.AggregationPipeline createAggregation(Class<?> source);
 
     /**
-     * Returns a new query bound to the collection (a specific {@link DBCollection})
+     * Returns a new query bound to the collection (a specific {@link MongoCollection})
      *
      * @param type The collection to query
      * @param <T>  the type of the query
@@ -91,7 +89,7 @@ public interface Datastore {
     @SuppressWarnings("removal")
     @Deprecated(since = "2.0", forRemoval = true)
     default <T> dev.morphia.query.UpdateOperations<T> createUpdateOperations(Class<T> clazz) {
-        return new dev.morphia.query.UpdateOpsImpl<>(this, clazz);
+        throw new UnsupportedOperationException("This should be overridden but it's also deprecated.");
     }
 
     /**
@@ -165,24 +163,27 @@ public interface Datastore {
     void ensureIndexes();
 
     /**
-     * Ensures (creating if necessary) the indexes found during class mapping
-     *
-     * @param clazz the class from which to get the index definitions
-     * @param <T>   the type to index
-     * @see Indexes
-     * @see Indexed
-     * @see Text
-     */
-    <T> void ensureIndexes(Class<T> clazz);
-
-    /**
-     * Find all instances by type
+     * Find instances of a type
      *
      * @param type the class to use for mapping the results
      * @param <T>  the type to query
      * @return the query
      */
     <T> Query<T> find(Class<T> type);
+
+    /**
+     * Find instances of a type using a native query.  This method is intended as an aid when copying queries from external sources such
+     * as the shell or Compass whose structure is already in json form.
+     *
+     * @param type        the class to use for mapping the results
+     * @param nativeQuery the full query structure to use for this Query
+     * @param <T>         the type to query
+     * @return the query
+     * @morphia.experimental
+     * @since 2.3
+     */
+    @MorphiaExperimental
+    <T> Query<T> find(Class<T> type, Document nativeQuery);
 
     /**
      * Find all instances by type from an alternate collection
@@ -235,12 +236,11 @@ public interface Datastore {
     @Nullable
     @Deprecated(since = "2.0", forRemoval = true)
     default <T> T findAndDelete(Query<T> query, FindAndModifyOptions options) {
-        return query.findAndDelete(new FindAndDeleteOptions()
-            .writeConcern(options.getWriteConcern())
-            .collation(options.getCollation())
-            .maxTime(options.getMaxTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
-            .sort(options.getSort())
-            .projection(options.getProjection()));
+        return query.findAndDelete(new FindAndDeleteOptions().writeConcern(options.writeConcern())
+                                                             .collation(options.getCollation())
+                                                             .maxTime(options.getMaxTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
+                                                             .sort(options.getSort())
+                                                             .projection(options.getProjection()));
     }
 
     /**
@@ -273,19 +273,8 @@ public interface Datastore {
     @Nullable
     @Deprecated(since = "2.0", forRemoval = true)
     default <T> T findAndModify(Query<T> query, dev.morphia.query.UpdateOperations<T> operations) {
-        return query.modify(operations).execute(new ModifyOptions()
-            .returnDocument(ReturnDocument.AFTER));
+        return query.modify(operations).execute(new ModifyOptions().returnDocument(ReturnDocument.AFTER));
     }
-
-    /**
-     * @param configurable the configurable
-     * @return any session found first on the configurable then on this
-     * @morphia.internal
-     * @since 2.0
-     */
-    @Nullable
-    @MorphiaInternal
-    ClientSession findSession(SessionConfigurable<?> configurable);
 
     /**
      * @return the codec registry
@@ -333,23 +322,14 @@ public interface Datastore {
     Mapper getMapper();
 
     /**
-     * Returns the session this datastore is attached to or null if none is attached.
-     *
-     * @return the session
-     * @since 2.0
-     */
-    @Nullable
-    default ClientSession getSession() {
-        return null;
-    }
-
-    /**
      * Inserts an entity in to the mapped collection.
      *
      * @param entity the entity to insert
      * @param <T>    the type of the entity
      */
-    <T> void insert(T entity);
+    default <T> void insert(T entity) {
+        insert(entity, new InsertOneOptions());
+    }
 
     /**
      * Inserts an entity in to the mapped collection.
@@ -433,6 +413,52 @@ public interface Datastore {
      * @since 2.0
      */
     <T> void refresh(T entity);
+
+    /**
+     * Replaces a document in the database
+     *
+     * @param entity the entity to replace
+     * @param <T>    the type of the entity
+     * @return the replaced entity
+     * @since 2.3
+     */
+    default <T> T replace(T entity) {
+        return replace(entity, new ReplaceOptions());
+    }
+
+    /**
+     * Replaces a document in the database
+     *
+     * @param entity  the entity to replace
+     * @param options the options to apply to the replace operation
+     * @param <T>     the type of the entity
+     * @return the replaced entity
+     * @since 2.3
+     */
+    <T> T replace(T entity, ReplaceOptions options);
+
+    /**
+     * Replaces a list of documents in the database
+     *
+     * @param entities the entities to replace
+     * @param <T>      the type of the entity
+     * @return the saved entities
+     * @since 2.3
+     */
+    default <T> List<T> replace(List<T> entities) {
+        return replace(entities, new ReplaceOptions());
+    }
+
+    /**
+     * Replaces a list of documents in the database
+     *
+     * @param entities the entities to replace
+     * @param <T>      the type of the entity
+     * @param options  the options to apply to the replace operation
+     * @return the saved entities
+     * @since 2.3
+     */
+    <T> List<T> replace(List<T> entities, ReplaceOptions options);
 
     /**
      * Saves the entities (Objects) and updates the @Id field
@@ -525,6 +551,15 @@ public interface Datastore {
     <T> T save(T entity, InsertOneOptions options);
 
     /**
+     * Shards any collections with sharding defintions.
+     *
+     * @morphia.experimental
+     * @since 2.3
+     */
+    @MorphiaExperimental
+    void shardCollections();
+
+    /**
      * Starts a new session on the server.
      *
      * @return the new session reference
@@ -571,10 +606,9 @@ public interface Datastore {
     @SuppressWarnings("removal")
     @Deprecated(since = "2.0", forRemoval = true)
     default <T> UpdateResult update(Query<T> query, dev.morphia.query.UpdateOperations<T> operations) {
-        return query.update(operations).execute(new UpdateOptions()
-            .upsert(false)
-            .multi(true)
-            .writeConcern(getMapper().getWriteConcern(query.getEntityClass())));
+        return query.update(operations)
+                    .execute(
+                        new UpdateOptions().upsert(false).multi(true).writeConcern(getMapper().getWriteConcern(query.getEntityClass())));
     }
 
     /**

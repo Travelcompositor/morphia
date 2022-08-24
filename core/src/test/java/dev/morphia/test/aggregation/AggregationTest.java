@@ -16,6 +16,7 @@
 
 package dev.morphia.test.aggregation;
 
+import com.github.zafarkhaja.semver.Version;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.BucketGranularity;
 import com.mongodb.client.model.Collation;
@@ -443,6 +444,30 @@ public class AggregationTest extends TestBase {
                           .field("copies", sum(field("copies"))))
                .out(to("testAverage"));
         try (MongoCursor<Document> testAverage = getDatabase().getCollection("testAverage").find().iterator()) {
+            Assert.assertEquals(testAverage.next().get("copies"), 20);
+        }
+    }
+
+    @Test
+    public void testOutAlternateDatabase() {
+        checkMinServerVersion(Version.valueOf("4.4.0"));
+        getDs().save(asList(new Book("The Banquet", "Dante", 2, "Italian", "Sophomore Slump"),
+            new Book("Divine Comedy", "Dante", 1, "Not Very Funny", "I mean for a 'comedy'", "Ironic"),
+            new Book("Eclogues", "Dante", 2, "Italian", ""),
+            new Book("The Odyssey", "Homer", 10, "Classic", "Mythology", "Sequel"),
+            new Book("Iliad", "Homer", 10, "Mythology", "Trojan War", "No Sequel")));
+
+        getDs().aggregate(Book.class)
+               .match(eq("author", "Homer"))
+               .group(group(id("author"))
+                          .field("copies", sum(field("copies"))))
+               .out(to("testAverage")
+                        .database("homer"));
+
+        try (MongoCursor<Document> testAverage = getMongoClient()
+                                                     .getDatabase("homer")
+                                                     .getCollection("testAverage")
+                                                     .find().iterator()) {
             Assert.assertEquals(testAverage.next().get("copies"), 20);
         }
     }

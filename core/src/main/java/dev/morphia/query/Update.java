@@ -1,9 +1,8 @@
 package dev.morphia.query;
 
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.UpdateResult;
-import dev.morphia.Datastore;
+import dev.morphia.DatastoreImpl;
 import dev.morphia.UpdateOptions;
 import dev.morphia.mapping.codec.pojo.EntityModel;
 import dev.morphia.query.updates.UpdateOperator;
@@ -20,12 +19,12 @@ import java.util.List;
 @Deprecated(since = "2.3")
 public class Update<T> extends UpdateBase<T> {
     @SuppressWarnings("rawtypes")
-    Update(Datastore datastore, MongoCollection<T> collection,
+    Update(DatastoreImpl datastore, MongoCollection<T> collection,
            Query<T> query, Class<T> type, UpdateOpsImpl operations) {
         super(datastore, collection, query, type, operations.getUpdates());
     }
 
-    Update(Datastore datastore, MongoCollection<T> collection,
+    Update(DatastoreImpl datastore, MongoCollection<T> collection,
            Query<T> query, Class<T> type, List<UpdateOperator> updates) {
         super(datastore, collection, query, type, updates);
     }
@@ -55,22 +54,12 @@ public class Update<T> extends UpdateBase<T> {
             }
         }
 
-        ClientSession session = getDatastore().findSession(options);
-        String alternate = options.collection();
-        MongoCollection<T> mongoCollection = alternate == null
-                                             ? getCollection()
-                                             : getDatastore()
-                                                   .getDatabase()
-                                                   .getCollection(alternate,
-                                                       getCollection().getDocumentClass());
+        MongoCollection<T> mongoCollection = options.prepare(getCollection(), getDatastore().getDatabase());
 
-        if (options.isMulti()) {
-            return session == null ? mongoCollection.updateMany(queryObject, updateOperations, options)
-                                   : mongoCollection.updateMany(session, queryObject, updateOperations, options);
-
+        if (options.multi()) {
+            return getDatastore().operations().updateMany(mongoCollection, queryObject, updateOperations, options);
         } else {
-            return session == null ? mongoCollection.updateOne(queryObject, updateOperations, options)
-                                   : mongoCollection.updateOne(session, queryObject, updateOperations, options);
+            return getDatastore().operations().updateOne(mongoCollection, queryObject, updateOperations, options);
         }
     }
 }

@@ -39,20 +39,21 @@
 
     <properties>
         <awaitility.version>1.7.0</awaitility.version>
-        <bottlerocket.version>0.31.0</bottlerocket.version>
-        <dokka.version>1.6.21</dokka.version>
-        <driver.version>4.6.0</driver.version>
-        <json.assert.version>1.5.0</json.assert.version>
+        <bottlerocket.version>0.36.0</bottlerocket.version>
+        <dokka.version>1.7.10</dokka.version>
+        <driver.version>4.7.1</driver.version>
+        <driver.minor.version>4.6</driver.minor.version>
+        <json.assert.version>1.5.1</json.assert.version>
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
-        <kotlin.version>1.6.21</kotlin.version>
-        <maven.version>3.8.5</maven.version>
-        <revapi.maven.plugin.version>0.14.6</revapi.maven.plugin.version>
-        <revapi.java.version>0.26.1</revapi.java.version>
-        <roaster.version>2.25.0.Final</roaster.version>
+        <kotlin.version>1.7.10</kotlin.version>
+        <maven.version>3.8.6</maven.version>
+        <revapi.maven.plugin.version>0.14.7</revapi.maven.plugin.version>
+        <revapi.java.version>0.27.0</revapi.java.version>
+        <roaster.version>2.26.0.Final</roaster.version>
         <slf4j.version>1.7.36</slf4j.version>
         <sofia.version>0.23</sofia.version>
-        <surefire.version>3.0.0-M6</surefire.version>
-        <testng.version>7.6.0</testng.version>
+        <surefire.version>3.0.0-M7</surefire.version>
+        <testng.version>7.6.1</testng.version>
         <zt.exec.version>1.12</zt.exec.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -71,7 +72,7 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j-impl</artifactId>
-                <version>2.17.2</version>
+                <version>2.18.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -171,7 +172,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>10.3</version>
+                            <version>10.3.2</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -193,12 +194,12 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.7.0.0</version>
+                    <version>4.7.1.1</version>
                     <dependencies>
                         <dependency>
                             <groupId>com.github.spotbugs</groupId>
                             <artifactId>spotbugs</artifactId>
-                            <version>4.7.0</version>
+                            <version>4.7.1</version>
                             <type>pom</type>
                         </dependency>
                     </dependencies>
@@ -284,17 +285,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.12.0</version>
+                <version>3.12.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.0.0-M2</version>
+                <version>3.0.0</version>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
@@ -320,7 +321,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>enforce-environment-variable-is-set</id>
@@ -366,7 +367,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.4.0</version>
+                        <version>3.4.1</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>

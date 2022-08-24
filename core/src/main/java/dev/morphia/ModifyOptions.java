@@ -1,13 +1,13 @@
 package dev.morphia;
 
 import com.mongodb.WriteConcern;
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.lang.Nullable;
-import dev.morphia.internal.SessionConfigurable;
+import dev.morphia.internal.CollectionConfigurable;
 import dev.morphia.internal.WriteConfigurable;
+import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -19,30 +19,23 @@ import java.util.concurrent.TimeUnit;
  *
  * @since 2.0
  */
-public class ModifyOptions extends FindOneAndUpdateOptions implements SessionConfigurable<ModifyOptions>,
-                                                                          WriteConfigurable<ModifyOptions>,
-                                                                          AlternateCollection<ModifyOptions> {
+public class ModifyOptions extends FindOneAndUpdateOptions implements WriteConfigurable<ModifyOptions>,
+                                                                          CollectionConfigurable<ModifyOptions> {
     private WriteConcern writeConcern;
-    private ClientSession clientSession;
     private String collection;
 
-    @Override
-    public ModifyOptions clientSession(ClientSession clientSession) {
-        this.clientSession = clientSession;
-        return this;
-    }
-
-    @Override
-    public ClientSession clientSession() {
-        return clientSession;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions collection(String collection) {
         this.collection = collection;
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String collection() {
         return collection;
@@ -59,48 +52,72 @@ public class ModifyOptions extends FindOneAndUpdateOptions implements SessionCon
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions projection(@Nullable Bson projection) {
         super.projection(projection);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions sort(@Nullable Bson sort) {
         super.sort(sort);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions upsert(boolean upsert) {
         super.upsert(upsert);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions returnDocument(ReturnDocument returnDocument) {
         super.returnDocument(returnDocument);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions maxTime(long maxTime, TimeUnit timeUnit) {
         super.maxTime(maxTime, timeUnit);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions bypassDocumentValidation(@Nullable Boolean bypassDocumentValidation) {
         super.bypassDocumentValidation(bypassDocumentValidation);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions collation(@Nullable Collation collation) {
         super.collation(collation);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModifyOptions arrayFilters(@Nullable List<? extends Bson> arrayFilters) {
         super.arrayFilters(arrayFilters);
@@ -110,7 +127,7 @@ public class ModifyOptions extends FindOneAndUpdateOptions implements SessionCon
     /**
      * {@inheritDoc}
      *
-     * @return this
+     * @see FindOneAndUpdateOptions#hint(Bson)
      * @since 2.2
      */
     public ModifyOptions hint(@Nullable Bson hint) {
@@ -122,10 +139,47 @@ public class ModifyOptions extends FindOneAndUpdateOptions implements SessionCon
      * {@inheritDoc}
      *
      * @return this
+     * @see FindOneAndUpdateOptions#hintString(String)
      * @since 2.2
      */
     public ModifyOptions hintString(@Nullable String hint) {
         super.hintString(hint);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public ModifyOptions comment(String comment) {
+        super.comment(comment);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public ModifyOptions comment(BsonValue comment) {
+        super.comment(comment);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public ModifyOptions let(Bson variables) {
+        super.let(variables);
         return this;
     }
 

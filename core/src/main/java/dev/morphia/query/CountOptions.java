@@ -21,8 +21,9 @@ import com.mongodb.ReadPreference;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Collation;
 import com.mongodb.lang.Nullable;
-import dev.morphia.AlternateCollection;
-import dev.morphia.internal.SessionConfigurable;
+import dev.morphia.internal.CollectionConfigurable;
+import dev.morphia.internal.ReadConfigurable;
+import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -34,23 +35,12 @@ import java.util.concurrent.TimeUnit;
  * @mongodb.driver.manual reference/command/count/ Count
  * @since 1.3
  */
-public class CountOptions extends com.mongodb.client.model.CountOptions implements SessionConfigurable<CountOptions>,
-                                                                                       AlternateCollection<CountOptions> {
+public class CountOptions extends com.mongodb.client.model.CountOptions
+    implements CollectionConfigurable<CountOptions>, ReadConfigurable<CountOptions> {
     private ReadPreference readPreference;
     private ReadConcern readConcern;
     private ClientSession clientSession;
     private String collection;
-
-    @Override
-    public CountOptions clientSession(ClientSession clientSession) {
-        this.clientSession = clientSession;
-        return this;
-    }
-
-    @Override
-    public ClientSession clientSession() {
-        return clientSession;
-    }
 
     @Override
     public CountOptions collection(String collection) {
@@ -92,14 +82,14 @@ public class CountOptions extends com.mongodb.client.model.CountOptions implemen
     }
 
     @Override
-    public CountOptions limit(int limit) {
-        super.limit(limit);
+    public CountOptions hintString(@Nullable String hint) {
+        super.hintString(hint);
         return this;
     }
 
     @Override
-    public CountOptions hintString(@Nullable String hint) {
-        super.hintString(hint);
+    public CountOptions limit(int limit) {
+        super.limit(limit);
         return this;
     }
 
@@ -110,6 +100,7 @@ public class CountOptions extends com.mongodb.client.model.CountOptions implemen
     }
 
     @Override
+    @Deprecated(forRemoval = true, since = "2.3")
     public long getMaxTime(TimeUnit timeUnit) {
         return super.getMaxTime(timeUnit);
     }
@@ -127,13 +118,44 @@ public class CountOptions extends com.mongodb.client.model.CountOptions implemen
     }
 
     /**
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public CountOptions comment(String comment) {
+        super.comment(comment);
+        return this;
+    }
+
+    /**
+     * @return this
+     * @since 2.3
+     */
+    @Override
+    public CountOptions comment(BsonValue comment) {
+        super.comment(comment);
+        return this;
+    }
+
+    /**
      * Returns the readConcern
      *
      * @return the readConcern
      * @mongodb.server.release 3.2
      */
+    @Override
     public ReadConcern readConcern() {
         return readConcern;
+    }
+
+    /**
+     * Returns the readPreference
+     *
+     * @return the readPreference
+     */
+    @Override
+    public ReadPreference readPreference() {
+        return readPreference;
     }
 
     /**
@@ -143,18 +165,10 @@ public class CountOptions extends com.mongodb.client.model.CountOptions implemen
      * @return this
      * @mongodb.server.release 3.2
      */
+    @Override
     public CountOptions readConcern(ReadConcern readConcern) {
         this.readConcern = readConcern;
         return this;
-    }
-
-    /**
-     * Returns the readPreference
-     *
-     * @return the readPreference
-     */
-    public ReadPreference readPreference() {
-        return readPreference;
     }
 
     /**
@@ -163,6 +177,7 @@ public class CountOptions extends com.mongodb.client.model.CountOptions implemen
      * @param readPreference the readPreference
      * @return this
      */
+    @Override
     public CountOptions readPreference(ReadPreference readPreference) {
         this.readPreference = readPreference;
         return this;
