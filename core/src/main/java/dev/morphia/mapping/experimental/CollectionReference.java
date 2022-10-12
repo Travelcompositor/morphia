@@ -3,6 +3,7 @@ package dev.morphia.mapping.experimental;
 import com.mongodb.DBRef;
 import com.mongodb.client.MongoCursor;
 import dev.morphia.Datastore;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.codec.pojo.EntityModel;
 import dev.morphia.mapping.codec.references.ReferenceCodec;
@@ -12,6 +13,7 @@ import dev.morphia.sofia.Sofia;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -26,12 +28,13 @@ import static java.util.Arrays.asList;
  * @param <C>
  * @morphia.internal
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
+@MorphiaInternal
+@SuppressWarnings({ "rawtypes", "unchecked" })
 @Deprecated(forRemoval = true, since = "2.3")
 public abstract class CollectionReference<C extends Collection> extends MorphiaReference<C> {
+    private final Map<String, List<Object>> collections = new HashMap<>();
     private EntityModel entityModel;
     private List ids;
-    private final Map<String, List<Object>> collections = new HashMap<>();
 
     protected CollectionReference(Datastore datastore, Mapper mapper, EntityModel entityModel, List ids) {
         super(datastore, mapper);
@@ -48,13 +51,8 @@ public abstract class CollectionReference<C extends Collection> extends MorphiaR
         }
     }
 
-    abstract void setValues(List ids);
-
-    protected CollectionReference() {
-    }
-
     static void collate(EntityModel valueType, Map<String, List<Object>> collections,
-                        Object o) {
+            Object o) {
         final String collectionName;
         final Object id;
         if (o instanceof DBRef) {
@@ -73,17 +71,15 @@ public abstract class CollectionReference<C extends Collection> extends MorphiaR
         return collections.computeIfAbsent(name, k -> new ArrayList<>());
     }
 
+    protected CollectionReference() {
+    }
+
     /**
-     * Gets the referenced entities.  This may require at least one request to the server.
+     * Gets the referenced entities. This may require at least one request to the server.
      *
      * @return the referenced entities
      */
     public abstract C get();
-
-    @Override
-    public Class<C> getType() {
-        return (Class<C>) entityModel.getType();
-    }
 
     @Override
     public List<Object> getIds() {
@@ -98,14 +94,23 @@ public abstract class CollectionReference<C extends Collection> extends MorphiaR
     }
 
     @Override
+    public Class<C> getType() {
+        return (Class<C>) entityModel.getType();
+    }
+
+    @Override
     final List<Object> getId(Mapper mapper, EntityModel entityModel) {
         if (ids == null) {
             ids = getValues().stream()
-                             .map(v -> ReferenceCodec.encodeId(mapper, v, entityModel))
-                             .collect(Collectors.toList());
+                    .map(v -> ReferenceCodec.encodeId(mapper, v, entityModel))
+                    .collect(Collectors.toList());
         }
         return ids;
     }
+
+    abstract Collection<?> getValues();
+
+    abstract void setValues(List ids);
 
     private List<Object> extractIds(List<Object> list) {
         List<Object> ids = new ArrayList<>();
@@ -144,29 +149,26 @@ public abstract class CollectionReference<C extends Collection> extends MorphiaR
             idMap.putAll(query(entry.getKey(), extractIds(entry.getValue())));
         }
         List values = mapIds(ids, idMap).stream()
-                                        .filter(Objects::nonNull)
-                                        .collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         resolve();
         return values;
     }
-
-    abstract Collection<?> getValues();
 
     Map<Object, Object> query(String collection, List<Object> collectionIds) {
 
         final Map<Object, Object> idMap = new HashMap<>();
         try (MongoCursor<?> cursor = getDatastore().find(collection)
-                                                   .disableValidation()
-                                                   .filter(in("_id", collectionIds)).iterator()) {
+                .disableValidation()
+                .filter(in("_id", collectionIds)).iterator()) {
             while (cursor.hasNext()) {
                 final Object entity = cursor.next();
                 idMap.put(getMapper().getId(entity), entity);
             }
 
-            if (!ignoreMissing() && idMap.size() != collectionIds.size()) {
+            if (!ignoreMissing() && idMap.size() != new HashSet<>(collectionIds).size()) {
                 throw new ReferenceException(
-                    Sofia.missingReferencedEntities(entityModel.getType().getSimpleName()));
-
+                        Sofia.missingReferencedEntities(entityModel.getType().getSimpleName()));
             }
         }
 

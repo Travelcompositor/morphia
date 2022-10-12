@@ -3,6 +3,7 @@ package dev.morphia.aggregation.stages;
 import dev.morphia.aggregation.expressions.impls.Expression;
 import dev.morphia.aggregation.expressions.impls.Fields;
 import dev.morphia.aggregation.expressions.impls.PipelineField;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.query.ValidationException;
 import dev.morphia.sofia.Sofia;
 
@@ -54,24 +55,25 @@ public class Projection extends Stage {
      * @return this
      */
     public Projection exclude(String name) {
-        return exclude(name, value(false));
+        return exclude(name, value(0));
     }
 
     /**
      * @return the fields
      * @morphia.internal
      */
+    @MorphiaInternal
     public List<PipelineField> getFields() {
         List<PipelineField> fields = new ArrayList<>();
 
+        if (suppressId) {
+            fields.add(new PipelineField("_id", value(0)));
+        }
         if (includes != null) {
             fields.addAll(includes.getFields());
         }
         if (excludes != null) {
             fields.addAll(excludes.getFields());
-        }
-        if (suppressId) {
-            fields.add(new PipelineField("_id", value(false)));
         }
         return fields;
     }
@@ -99,7 +101,7 @@ public class Projection extends Stage {
      * @return this
      */
     public Projection include(String name) {
-        return include(name, value(true));
+        return include(name, value(1));
     }
 
     /**

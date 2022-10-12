@@ -1,0 +1,12 @@
+name: Pull Requests
+
+on:
+  pull_request:
+    paths-ignore:
+      - '.github/**'
+
+jobs:
+  Build:
+    uses: evanchooly/workflows/.github/workflows/pull-request.yml@master
+    with:
+      maven-flags: "-Dmongodb=6.0.2 -Dquality"

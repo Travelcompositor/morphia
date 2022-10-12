@@ -1,10 +1,12 @@
 package dev.morphia.mapping.codec.reader;
 
+import dev.morphia.annotations.internal.MorphiaInternal;
 import org.bson.BsonType;
 
 /**
  * @morphia.internal
  */
+@MorphiaInternal
 public class NameState extends ReaderState {
 
     public static final String NAME = "NAME";
@@ -24,8 +26,8 @@ public class NameState extends ReaderState {
     BsonType getCurrentBsonType() {
         ReaderState readerState = nextState();
         return readerState != null
-               ? readerState.getCurrentBsonType()
-               : BsonType.UNDEFINED;
+                ? readerState.getCurrentBsonType()
+                : BsonType.UNDEFINED;
     }
 
     @Override

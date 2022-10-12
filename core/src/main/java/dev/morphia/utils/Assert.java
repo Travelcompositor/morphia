@@ -1,13 +1,16 @@
 package dev.morphia.utils;
 
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.query.QueryException;
 
 import static java.lang.String.format;
 
 /**
  * Provides various assertions for Morphia during validation
+ *
  * @morphia.internal
  */
+@MorphiaInternal
 public final class Assert {
     private Assert() {
     }

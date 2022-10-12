@@ -1,5 +1,7 @@
 package dev.morphia.mapping.codec.pojo;
 
+import dev.morphia.annotations.internal.MorphiaInternal;
+
 import java.util.Objects;
 
 /**
@@ -9,6 +11,7 @@ import java.util.Objects;
  * @morphia.internal
  * @since 2.1.5
  */
+@MorphiaInternal
 @SuppressWarnings("unchecked")
 public class WildCardTypeData<T> extends TypeData<T> {
     private final boolean upperBound;
@@ -58,16 +61,16 @@ public class WildCardTypeData<T> extends TypeData<T> {
 
     @Override
     public String toString() {
-/*
-        String value = type.getSimpleName();
-        if (!typeParameters.isEmpty()) {
-            StringJoiner joiner = new StringJoiner(", ", "<", ">");
-            typeParameters.forEach(t -> {
-                joiner.add(t.toString());
-            });
-            value += joiner;
-        }
-*/
+        /*
+         * String value = type.getSimpleName();
+         * if (!typeParameters.isEmpty()) {
+         * StringJoiner joiner = new StringJoiner(", ", "<", ">");
+         * typeParameters.forEach(t -> {
+         * joiner.add(t.toString());
+         * });
+         * value += joiner;
+         * }
+         */
 
         return (upperBound ? "? extends " : "? super ") + super.toString();
     }

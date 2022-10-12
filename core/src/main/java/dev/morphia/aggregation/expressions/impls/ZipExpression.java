@@ -2,6 +2,7 @@ package dev.morphia.aggregation.expressions.impls;
 
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.codecs.ExpressionHelper;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 
@@ -19,6 +20,7 @@ public class ZipExpression extends Expression {
      * @param inputs
      * @morphia.internal
      */
+    @MorphiaInternal
     public ZipExpression(List<Expression> inputs) {
         super("$zip");
         this.inputs = inputs;
@@ -50,7 +52,7 @@ public class ZipExpression extends Expression {
     }
 
     /**
-     * Specifies whether the length of the longest array determines the number of arrays in the output array.  The default on the server
+     * Specifies whether the length of the longest array determines the number of arrays in the output array. The default on the server
      * is false.
      *
      * @param useLongestLength true to use the longest length

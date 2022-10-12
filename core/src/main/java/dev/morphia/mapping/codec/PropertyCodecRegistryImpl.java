@@ -16,6 +16,7 @@
 
 package dev.morphia.mapping.codec;
 
+import dev.morphia.annotations.internal.MorphiaInternal;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PropertyCodecProvider;
@@ -31,18 +32,19 @@ import java.util.List;
  * @morphia.internal
  * @since 2.0
  */
+@MorphiaInternal
 public class PropertyCodecRegistryImpl implements PropertyCodecRegistry {
     private final List<PropertyCodecProvider> propertyCodecProviders;
 
     /**
      * Creates an all purpose registry for property codecs
      *
-     * @param pojoCodec the "parent" codec
-     * @param codecRegistry the parent registry
+     * @param pojoCodec              the "parent" codec
+     * @param codecRegistry          the parent registry
      * @param propertyCodecProviders a list of providers
      */
     public PropertyCodecRegistryImpl(Codec<?> pojoCodec, CodecRegistry codecRegistry,
-                                     List<PropertyCodecProvider> propertyCodecProviders) {
+            List<PropertyCodecProvider> propertyCodecProviders) {
         List<PropertyCodecProvider> augmentedProviders = new ArrayList<PropertyCodecProvider>();
         augmentedProviders.addAll(propertyCodecProviders);
         augmentedProviders.add(new CollectionPropertyCodecProvider());

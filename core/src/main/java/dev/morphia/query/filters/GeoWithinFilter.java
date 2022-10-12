@@ -4,6 +4,7 @@ import com.mongodb.client.model.geojson.CoordinateReferenceSystem;
 import com.mongodb.client.model.geojson.MultiPolygon;
 import com.mongodb.client.model.geojson.Polygon;
 import dev.morphia.Datastore;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.EncoderContext;
@@ -14,7 +15,8 @@ import org.bson.codecs.EncoderContext;
  * @morphia.internal
  * @since 2.0
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
+@MorphiaInternal
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class GeoWithinFilter extends Filter {
     private CoordinateReferenceSystem crs;
 

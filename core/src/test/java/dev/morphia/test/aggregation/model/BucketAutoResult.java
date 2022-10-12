@@ -29,37 +29,8 @@ public class BucketAutoResult {
     @Override
     public String toString() {
         return "BucketAutoResult{"
-               + "id=" + id
-               + ", count=" + count
-               + '}';
-    }
-
-    public static class MinMax {
-        private int min;
-        private int max;
-
-        public int getMax() {
-            return max;
-        }
-
-        public void setMax(int max) {
-            this.max = max;
-        }
-
-        public int getMin() {
-            return min;
-        }
-
-        public void setMin(int min) {
-            this.min = min;
-        }
-
-        @Override
-        public String toString() {
-            return "MinMax{"
-                   + "min=" + min
-                   + ", max=" + max
-                   + '}';
-        }
+                + "id=" + id
+                + ", count=" + count
+                + '}';
     }
 }

@@ -1,6 +1,7 @@
 package dev.morphia.aggregation.expressions.impls;
 
 import dev.morphia.Datastore;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 
@@ -21,10 +22,14 @@ public class AccumulatorExpression extends Expression {
     private List<Expression> initArgs;
     private String finalizeFunction;
 
-
     /**
+     * @param initFunction
+     * @param accumulateFunction
+     * @param accumulateArgs
+     * @param mergeFunction
      * @morphia.internal
      */
+    @MorphiaInternal
     public AccumulatorExpression(String initFunction, String accumulateFunction, List<Expression> accumulateArgs, String mergeFunction) {
         super("$accumulator");
         this.initFunction = initFunction;
@@ -35,15 +40,15 @@ public class AccumulatorExpression extends Expression {
 
     @Override
     public void encode(Datastore datastore, BsonWriter writer, EncoderContext encoderContext) {
-            document(writer, getOperation(), () -> {
-                writer.writeString("init", initFunction);
-                array(datastore, writer, "initArgs", initArgs, encoderContext);
-                writer.writeString("accumulate", accumulateFunction);
-                array(datastore, writer, "accumulateArgs", accumulateArgs, encoderContext);
-                writer.writeString("merge", mergeFunction);
-                writer.writeString("finalize", finalizeFunction);
-                writer.writeString("lang", lang);
-            });
+        document(writer, getOperation(), () -> {
+            writer.writeString("init", initFunction);
+            array(datastore, writer, "initArgs", initArgs, encoderContext);
+            writer.writeString("accumulate", accumulateFunction);
+            array(datastore, writer, "accumulateArgs", accumulateArgs, encoderContext);
+            writer.writeString("merge", mergeFunction);
+            writer.writeString("finalize", finalizeFunction);
+            writer.writeString("lang", lang);
+        });
     }
 
     /**

@@ -2,6 +2,7 @@ package dev.morphia.mapping.codec.pojo;
 
 import com.mongodb.lang.Nullable;
 import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.NotMappableException;
 import dev.morphia.mapping.conventions.MorphiaConvention;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
  * @morphia.internal
  * @since 2.0
  */
+@MorphiaInternal
 @SuppressWarnings("UnusedReturnValue")
 public class EntityModelBuilder {
     private final List<PropertyModelBuilder> propertyModels = new ArrayList<>();
@@ -71,17 +73,16 @@ public class EntityModelBuilder {
         parameterization.putAll(findParameterization(type));
         propagateTypes();
 
-
         interfaces.stream()
-                  .map(i -> {
-                      try {
-                          return mapper.getEntityModel(i);
-                      } catch (NotMappableException ignored) {
-                          return null;
-                      }
-                  })
-                  .filter(Objects::nonNull)
-                  .collect(Collectors.toCollection(() -> interfaceModels));
+                .map(i -> {
+                    try {
+                        return mapper.getEntityModel(i);
+                    } catch (NotMappableException ignored) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(() -> interfaceModels));
     }
 
     /**
@@ -191,6 +192,12 @@ public class EntityModelBuilder {
         return (A) annotations.get(type);
     }
 
+    /**
+     * @param type
+     * @param suggested
+     * @param genericType
+     * @return the type data for the model
+     */
     public TypeData<?> getTypeData(Class<?> type, TypeData<?> suggested, Type genericType) {
 
         if (genericType instanceof TypeVariable) {
@@ -255,9 +262,9 @@ public class EntityModelBuilder {
      */
     public PropertyModelBuilder propertyModelByName(String name) throws NoSuchElementException {
         return propertyModels.stream().filter(f -> f.name().equals(name))
-                             .findFirst()
-                             .orElseThrow(() -> new NoSuchElementException(String.format("No property found named %s.  Valid names are: %s",
-                                 name, propertyModels.stream().map(p -> p.name()).collect(Collectors.toList()))));
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException(String.format("No property found named %s.  Valid names are: %s",
+                        name, propertyModels.stream().map(p -> p.name()).collect(Collectors.toList()))));
     }
 
     /**
@@ -332,8 +339,8 @@ public class EntityModelBuilder {
     protected String getCollectionName() {
         Entity entityAn = getAnnotation(Entity.class);
         return entityAn != null && !entityAn.value().equals(Mapper.IGNORED_FIELDNAME)
-               ? entityAn.value()
-               : mapper.getOptions().getCollectionNaming().apply(targetType.getSimpleName());
+                ? entityAn.value()
+                : mapper.getOptions().getCollectionNaming().apply(targetType.getSimpleName());
     }
 
     private void buildHierarchy(Class<?> type) {
@@ -354,8 +361,8 @@ public class EntityModelBuilder {
         }
         list.addAll(interfaces);
         list.addAll(interfaces.stream()
-                              .flatMap(i -> findInterfaces(i).stream())
-                              .collect(Collectors.toList()));
+                .flatMap(i -> findInterfaces(i).stream())
+                .collect(Collectors.toList()));
 
         return list;
     }

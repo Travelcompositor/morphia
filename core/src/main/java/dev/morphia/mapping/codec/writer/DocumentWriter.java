@@ -1,5 +1,6 @@
 package dev.morphia.mapping.codec.writer;
 
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.Mapper;
 import org.bson.BsonBinary;
 import org.bson.BsonDbPointer;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
  *
  * @morphia.internal
  */
+@MorphiaInternal
 @SuppressWarnings("unchecked")
 public class DocumentWriter implements BsonWriter {
     private final RootState root;
@@ -65,7 +67,7 @@ public class DocumentWriter implements BsonWriter {
      */
     public DocumentWriter encode(CodecRegistry codecRegistry, Object value, EncoderContext encoderContext) {
         ((Codec) codecRegistry.get(value.getClass()))
-            .encode(this, value, encoderContext);
+                .encode(this, value, encoderContext);
 
         return this;
     }
@@ -75,12 +77,15 @@ public class DocumentWriter implements BsonWriter {
     }
 
     /**
-     * @return the root, or output, of this writer.  usually a Document.
+     * @return the root, or output, of this writer. usually a Document.
      */
     public Document getDocument() {
         return root.getDocument();
     }
 
+    /**
+     * @return the state
+     */
     public WriteState state() {
         return state;
     }

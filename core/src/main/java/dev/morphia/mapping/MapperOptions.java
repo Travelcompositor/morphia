@@ -1,6 +1,5 @@
 package dev.morphia.mapping;
 
-
 import com.mongodb.lang.Nullable;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Property;
@@ -32,10 +31,7 @@ import static org.bson.UuidRepresentation.STANDARD;
 
 /**
  * Options to control mapping behavior.
- *
- * @morphia.internal
  */
-@MorphiaInternal
 public class MapperOptions {
     private static final Logger LOG = LoggerFactory.getLogger(MapperOptions.class);
     public static final MapperOptions DEFAULT = MapperOptions.builder().build();
@@ -104,12 +100,12 @@ public class MapperOptions {
      */
     public static Builder legacy() {
         return new Builder()
-                   .dateStorage(DateStorage.SYSTEM_DEFAULT)
-                   .discriminatorKey("className")
-                   .discriminator(DiscriminatorFunction.className())
-                   .collectionNaming(NamingStrategy.identity())
-                   .propertyNaming(NamingStrategy.identity())
-                   .queryFactory(new LegacyQueryFactory());
+                .dateStorage(DateStorage.SYSTEM_DEFAULT)
+                .discriminatorKey("className")
+                .discriminator(DiscriminatorFunction.className())
+                .collectionNaming(NamingStrategy.identity())
+                .propertyNaming(NamingStrategy.identity())
+                .queryFactory(new LegacyQueryFactory());
     }
 
     /**
@@ -292,7 +288,7 @@ public class MapperOptions {
         private Builder() {
         }
 
-        public Builder(MapperOptions original) {
+        private Builder(MapperOptions original) {
             autoImportModels = original.autoImportModels;
             cacheClassLookups = original.cacheClassLookups;
             classLoader = original.getClassLoader();
@@ -329,7 +325,7 @@ public class MapperOptions {
 
         /**
          * This feature automatically discovers and uses {@link EntityModelImporter} instances to allow for external definition of class
-         * models.  This feature defaults to true.
+         * models. This feature defaults to true.
          *
          * @param autoImportModels Set to true to auto import definitions via {@link EntityModelImporter}. Defaults to true.
          * @return this
@@ -410,7 +406,7 @@ public class MapperOptions {
         }
 
         /**
-         * The default value for this is {@link DateStorage#UTC}.  To use the {@link DateStorage#SYSTEM_DEFAULT}, either set this value
+         * The default value for this is {@link DateStorage#UTC}. To use the {@link DateStorage#SYSTEM_DEFAULT}, either set this value
          * explicitly here or use the {@link #legacy()} Builder.
          *
          * @param dateStorage the storage format to use for dates
@@ -450,7 +446,7 @@ public class MapperOptions {
         /**
          * Defines the discriminator key name
          *
-         * @param key the key to use, e.g., "_t".  the default/legacy value is "className"
+         * @param key the key to use, e.g., "_t". the default/legacy value is "className"
          * @return this
          */
         public Builder discriminatorKey(String key) {
@@ -598,9 +594,9 @@ public class MapperOptions {
         private List<MorphiaConvention> conventions() {
             if (conventions.isEmpty()) {
                 List<MorphiaConvention> list = new ArrayList<>(of(
-                    new MorphiaDefaultsConvention(),
-                    propertyDiscovery == FIELDS ? new FieldDiscovery() : new MethodDiscovery(),
-                    new ConfigureProperties()));
+                        new MorphiaDefaultsConvention(),
+                        propertyDiscovery == FIELDS ? new FieldDiscovery() : new MethodDiscovery(),
+                        new ConfigureProperties()));
 
                 ServiceLoader<MorphiaConvention> conventions = ServiceLoader.load(MorphiaConvention.class);
                 conventions.forEach(list::add);

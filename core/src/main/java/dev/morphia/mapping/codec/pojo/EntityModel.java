@@ -12,6 +12,7 @@ import dev.morphia.annotations.PostPersist;
 import dev.morphia.annotations.PreLoad;
 import dev.morphia.annotations.PrePersist;
 import dev.morphia.annotations.ShardKeys;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.InstanceCreatorFactory;
 import dev.morphia.mapping.InstanceCreatorFactoryImpl;
 import dev.morphia.mapping.Mapper;
@@ -19,6 +20,8 @@ import dev.morphia.mapping.MappingException;
 import dev.morphia.mapping.codec.MorphiaInstanceCreator;
 import dev.morphia.sofia.Sofia;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -42,12 +45,15 @@ import static java.util.Collections.emptyList;
  * @morphia.internal
  * @since 2.0
  */
-@SuppressWarnings({"unchecked", "deprecation", "removal"})
+@MorphiaInternal
+@SuppressWarnings({ "unchecked", "deprecation", "removal" })
 public class EntityModel {
+    private static final Logger LOG = LoggerFactory.getLogger(EntityModel.class);
+
     private static final List<Class<? extends Annotation>> LIFECYCLE_ANNOTATIONS = asList(PrePersist.class,
-        PreLoad.class,
-        PostPersist.class,
-        PostLoad.class);
+            PreLoad.class,
+            PostPersist.class,
+            PostLoad.class);
 
     private final Map<Class<? extends Annotation>, Annotation> annotations;
     private final Map<String, PropertyModel> propertyModelsByName;
@@ -88,8 +94,8 @@ public class EntityModel {
         this.propertyModelsByMappedName = new LinkedHashMap<>();
         builder.propertyModels().forEach(modelBuilder -> {
             PropertyModel model = modelBuilder
-                                      .owner(this)
-                                      .build();
+                    .owner(this)
+                    .build();
             propertyModelsByMappedName.put(model.getMappedName(), model);
             for (String name : modelBuilder.alternateNames()) {
                 if (propertyModelsByMappedName.put(name, model) != null) {
@@ -102,9 +108,9 @@ public class EntityModel {
         ShardKeys shardKeys = getAnnotation(ShardKeys.class);
         if (shardKeys != null) {
             this.shardKeys = stream(shardKeys.value())
-                                 .map(k -> getProperty(k.value()))
-                                 .filter(Objects::nonNull)
-                                 .collect(Collectors.toList());
+                    .map(k -> getProperty(k.value()))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
         } else {
             this.shardKeys = emptyList();
         }
@@ -141,7 +147,7 @@ public class EntityModel {
      * @param datastore the Datastore to use
      */
     public void callLifecycleMethods(Class<? extends Annotation> event, Object entity, Document document,
-                                     Datastore datastore) {
+            Datastore datastore) {
         final List<ClassMethodPair> methodPairs = lifecycleMethods.get(event);
         if (methodPairs != null) {
             for (ClassMethodPair cm : methodPairs) {
@@ -182,6 +188,9 @@ public class EntityModel {
         return collectionName;
     }
 
+    /**
+     * @return the shard keys
+     */
     public List<PropertyModel> getShardKeys() {
         return shardKeys;
     }
@@ -246,8 +255,8 @@ public class EntityModel {
      */
     public List<PropertyModel> getProperties(Class<? extends Annotation> type) {
         return propertyModelsByName.values().stream()
-                                   .filter(model -> model.hasAnnotation(type))
-                                   .collect(Collectors.toList());
+                .filter(model -> model.hasAnnotation(type))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -311,8 +320,8 @@ public class EntityModel {
     @Override
     public int hashCode() {
         return Objects.hash(getAnnotations(), propertyModelsByName, propertyModelsByMappedName, creatorFactory,
-            discriminatorEnabled,
-            getDiscriminatorKey(), getDiscriminator(), getType(), getCollectionName(), lifecycleMethods);
+                discriminatorEnabled,
+                getDiscriminatorKey(), getDiscriminator(), getType(), getCollectionName(), lifecycleMethods);
     }
 
     @Override
@@ -325,22 +334,22 @@ public class EntityModel {
         }
         final EntityModel that = (EntityModel) o;
         return discriminatorEnabled == that.discriminatorEnabled
-               && Objects.equals(getAnnotations(), that.getAnnotations())
-               && Objects.equals(propertyModelsByName, that.propertyModelsByName)
-               && Objects.equals(propertyModelsByMappedName, that.propertyModelsByMappedName)
-               && Objects.equals(creatorFactory, that.creatorFactory)
-               && Objects.equals(getDiscriminatorKey(), that.getDiscriminatorKey())
-               && Objects.equals(getDiscriminator(), that.getDiscriminator())
-               && Objects.equals(getType(), that.getType())
-               && Objects.equals(getCollectionName(), that.getCollectionName())
-               && Objects.equals(lifecycleMethods, that.lifecycleMethods);
+                && Objects.equals(getAnnotations(), that.getAnnotations())
+                && Objects.equals(propertyModelsByName, that.propertyModelsByName)
+                && Objects.equals(propertyModelsByMappedName, that.propertyModelsByMappedName)
+                && Objects.equals(creatorFactory, that.creatorFactory)
+                && Objects.equals(getDiscriminatorKey(), that.getDiscriminatorKey())
+                && Objects.equals(getDiscriminator(), that.getDiscriminator())
+                && Objects.equals(getType(), that.getType())
+                && Objects.equals(getCollectionName(), that.getCollectionName())
+                && Objects.equals(lifecycleMethods, that.lifecycleMethods);
     }
 
     @Override
     public String toString() {
         String properties = propertyModelsByName.values().stream()
-                                                .map(PropertyModel::toString)
-                                                .collect(Collectors.joining(", "));
+                .map(PropertyModel::toString)
+                .collect(Collectors.joining(", "));
         return format("%s<%s> { %s } ", EntityModel.class.getSimpleName(), type.getSimpleName(), properties);
     }
 
@@ -361,6 +370,9 @@ public class EntityModel {
         return getType().isInterface();
     }
 
+    /**
+     * @return true if the discriminator should be used
+     */
     public boolean useDiscriminator() {
         return discriminatorEnabled;
     }
@@ -373,9 +385,9 @@ public class EntityModel {
     }
 
     private void callGlobalInterceptors(Class<? extends Annotation> event, Object entity, Document document,
-                                        Datastore datastore) {
+            Datastore datastore) {
         for (EntityInterceptor ei : datastore.getMapper().getInterceptors()) {
-            Sofia.logCallingInterceptorMethod(event.getSimpleName(), ei);
+            LOG.debug(Sofia.callingInterceptorMethod(event.getSimpleName(), ei));
 
             if (event.equals(PreLoad.class)) {
                 ei.preLoad(entity, document, mapper);
@@ -418,7 +430,7 @@ public class EntityModel {
             for (Class<? extends Annotation> annotationClass : LIFECYCLE_ANNOTATIONS) {
                 if (method.isAnnotationPresent(annotationClass)) {
                     lifecycleMethods.computeIfAbsent(annotationClass, c -> new ArrayList<>())
-                                    .add(new ClassMethodPair(method, entityListener ? type : null, annotationClass));
+                            .add(new ClassMethodPair(method, entityListener ? type : null, annotationClass));
                 }
             }
         }

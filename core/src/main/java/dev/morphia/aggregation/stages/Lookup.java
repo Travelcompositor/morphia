@@ -4,6 +4,7 @@ import com.mongodb.lang.Nullable;
 import dev.morphia.aggregation.expressions.Expressions;
 import dev.morphia.aggregation.expressions.impls.DocumentExpression;
 import dev.morphia.aggregation.expressions.impls.Expression;
+import dev.morphia.annotations.internal.MorphiaInternal;
 
 import java.util.List;
 
@@ -34,6 +35,10 @@ public class Lookup extends Stage {
     protected Lookup(String from) {
         super("$lookup");
         this.from = from;
+    }
+
+    protected Lookup() {
+        super("$lookup");
     }
 
     /**
@@ -83,6 +88,16 @@ public class Lookup extends Stage {
     }
 
     /**
+     * Creates a new stage using the target collection
+     *
+     * @return the new stage
+     * @since 2.3
+     */
+    public static Lookup lookup() {
+        return new Lookup();
+    }
+
+    /**
      * Name of the array field added to each output document. Contains the documents traversed in the $graphLookup stage to reach the
      * document.
      *
@@ -110,6 +125,7 @@ public class Lookup extends Stage {
      * @morphia.internal
      */
     @Nullable
+    @MorphiaInternal
     public String getAs() {
         return as;
     }
@@ -119,6 +135,7 @@ public class Lookup extends Stage {
      * @morphia.internal
      */
     @Nullable
+    @MorphiaInternal
     public String getForeignField() {
         return foreignField;
     }
@@ -128,6 +145,7 @@ public class Lookup extends Stage {
      * @morphia.internal
      */
     @Nullable
+    @MorphiaInternal
     public String getFrom() {
         return from;
     }
@@ -137,6 +155,7 @@ public class Lookup extends Stage {
      * @morphia.internal
      */
     @Nullable
+    @MorphiaInternal
     public Class<?> getFromType() {
         return fromType;
     }
@@ -146,6 +165,7 @@ public class Lookup extends Stage {
      * @morphia.internal
      */
     @Nullable
+    @MorphiaInternal
     public String getLocalField() {
         return localField;
     }
@@ -155,6 +175,7 @@ public class Lookup extends Stage {
      * @morphia.internal
      */
     @Nullable
+    @MorphiaInternal
     public List<Stage> getPipeline() {
         return pipeline;
     }
@@ -163,6 +184,7 @@ public class Lookup extends Stage {
      * @return the embeded pipeline's variables
      * @morphia.internal
      */
+    @MorphiaInternal
     public DocumentExpression getVariables() {
         return variables;
     }

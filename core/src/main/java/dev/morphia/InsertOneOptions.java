@@ -24,12 +24,12 @@ import dev.morphia.internal.WriteConfigurable;
 import org.bson.BsonValue;
 
 /**
- * Options related to insertion of documents into MongoDB.  The setter methods return {@code this} so that a chaining style can be used.
+ * Options related to insertion of documents into MongoDB. The setter methods return {@code this} so that a chaining style can be used.
  *
  * @since 1.3
  */
 public class InsertOneOptions implements WriteConfigurable<InsertOneOptions>,
-                                             CollectionConfigurable<InsertOneOptions> {
+        CollectionConfigurable<InsertOneOptions> {
     private com.mongodb.client.model.InsertOneOptions options = new com.mongodb.client.model.InsertOneOptions();
     private WriteConcern writeConcern = WriteConcern.ACKNOWLEDGED;
     private boolean unset;
@@ -53,17 +53,6 @@ public class InsertOneOptions implements WriteConfigurable<InsertOneOptions>,
     }
 
     /**
-     * @return the bypass document level validation flag
-     * @morphia.internal
-     * @see com.mongodb.client.model.InsertOneOptions#getBypassDocumentValidation()
-     */
-    @Nullable
-    @MorphiaInternal
-    public Boolean bypassDocumentValidation() {
-        return options.getBypassDocumentValidation();
-    }
-
-    /**
      * Sets whether to bypass document validation.
      *
      * @param bypassDocumentValidation whether to bypass document validation, or null if unspecified
@@ -75,11 +64,23 @@ public class InsertOneOptions implements WriteConfigurable<InsertOneOptions>,
         return this;
     }
 
+    /**
+     * Specifies an alternate collection to use rather than the mapped collection.
+     *
+     * @param collection the name of the collection to use
+     * @return the options
+     */
     public InsertOneOptions collection(@Nullable String collection) {
         this.collection = collection;
         return this;
     }
 
+    /**
+     *
+     * @return the collection
+     * @morphia.internal
+     */
+    @MorphiaInternal
     public String collection() {
         return collection;
     }
@@ -115,6 +116,17 @@ public class InsertOneOptions implements WriteConfigurable<InsertOneOptions>,
     @Deprecated(forRemoval = true, since = "2.3")
     public Boolean getBypassDocumentValidation() {
         return bypassDocumentValidation();
+    }
+
+    /**
+     * @return the bypass document level validation flag
+     * @morphia.internal
+     * @see com.mongodb.client.model.InsertOneOptions#getBypassDocumentValidation()
+     */
+    @Nullable
+    @MorphiaInternal
+    public Boolean bypassDocumentValidation() {
+        return options.getBypassDocumentValidation();
     }
 
     /**
@@ -169,7 +181,7 @@ public class InsertOneOptions implements WriteConfigurable<InsertOneOptions>,
     }
 
     /**
-     * The write concern to use for the insertion.  By default the write concern configured for the MongoCollection instance will be used.
+     * The write concern to use for the insertion. By default the write concern configured for the MongoCollection instance will be used.
      *
      * @return the write concern, or null if the default will be used.
      */

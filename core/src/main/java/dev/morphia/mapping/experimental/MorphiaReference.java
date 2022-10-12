@@ -3,6 +3,7 @@ package dev.morphia.mapping.experimental;
 import com.mongodb.lang.Nullable;
 import dev.morphia.Datastore;
 import dev.morphia.annotations.Handler;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.codec.pojo.EntityModel;
 
@@ -16,8 +17,8 @@ import java.util.StringJoiner;
  *
  * @param <T>
  * @since 1.5
- * @deprecated use @{@link dev.morphia.annotations.Reference} instead.  See issue
- * <a href="https://github.com/MorphiaOrg/morphia/issues/1864">1864</a> for more.
+ * @deprecated use @{@link dev.morphia.annotations.Reference} instead. See issue
+ *             <a href="https://github.com/MorphiaOrg/morphia/issues/1864">1864</a> for more.
  */
 @SuppressWarnings("unchecked")
 @Handler(MorphiaReferenceCodec.class)
@@ -57,7 +58,7 @@ public abstract class MorphiaReference<T> {
     }
 
     /**
-     * @return returns the referenced entity if it exists.  May return null.
+     * @return returns the referenced entity if it exists. May return null.
      */
     @Nullable
     public abstract T get();
@@ -65,8 +66,8 @@ public abstract class MorphiaReference<T> {
     @Override
     public String toString() {
         return new StringJoiner(", ", getClass().getSimpleName() + "<<", ">>")
-            .add(getIds().toString())
-            .toString();
+                .add(getIds().toString())
+                .toString();
     }
 
     /**
@@ -107,7 +108,7 @@ public abstract class MorphiaReference<T> {
     }
 
     /**
-     * Instructs Morphia to ignore missing referenced entities.  The default is to throw an exception on missing entities.
+     * Instructs Morphia to ignore missing referenced entities. The default is to throw an exception on missing entities.
      *
      * @param ignoreMissing ignore any missing referenced documents
      * @return this
@@ -128,6 +129,7 @@ public abstract class MorphiaReference<T> {
      * @return true if this reference has already been resolved
      * @morphia.internal
      */
+    @MorphiaInternal
     public final boolean isResolved() {
         return resolved;
     }

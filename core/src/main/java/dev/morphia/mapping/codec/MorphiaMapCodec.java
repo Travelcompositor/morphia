@@ -1,6 +1,7 @@
 package dev.morphia.mapping.codec;
 
 import dev.morphia.Datastore;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.EncoderContext;
@@ -12,12 +13,13 @@ import java.util.Map.Entry;
 import static dev.morphia.aggregation.codecs.ExpressionHelper.document;
 
 /**
- * Maps Map subtypes to/from the database.  This is mostly a pass-through to the driver codec except for the encoding, non-String types
+ * Maps Map subtypes to/from the database. This is mostly a pass-through to the driver codec except for the encoding, non-String types
  * are converted to Strings if possible.
  *
  * @morphia.internal
  * @since 2.1.7
  */
+@MorphiaInternal
 public class MorphiaMapCodec extends MapCodec {
 
     private final Datastore datastore;

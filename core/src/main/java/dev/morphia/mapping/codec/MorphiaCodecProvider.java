@@ -6,6 +6,7 @@ import dev.morphia.annotations.PostLoad;
 import dev.morphia.annotations.PostPersist;
 import dev.morphia.annotations.PreLoad;
 import dev.morphia.annotations.PrePersist;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.codec.pojo.EntityDecoder;
 import dev.morphia.mapping.codec.pojo.EntityModel;
@@ -29,6 +30,7 @@ import java.util.ServiceLoader;
  *
  * @morphia.internal
  */
+@MorphiaInternal
 public class MorphiaCodecProvider implements CodecProvider {
     private final Map<Class<?>, Codec<?>> codecs = new HashMap<>();
     private final Mapper mapper;
@@ -45,7 +47,7 @@ public class MorphiaCodecProvider implements CodecProvider {
         this.mapper = datastore.getMapper();
 
         propertyCodecProviders.addAll(List.of(new MorphiaMapPropertyCodecProvider(),
-            new MorphiaCollectionPropertyCodecProvider()));
+                new MorphiaCollectionPropertyCodecProvider()));
 
         ServiceLoader<MorphiaPropertyCodecProvider> providers = ServiceLoader.load(MorphiaPropertyCodecProvider.class);
         providers.forEach(propertyCodecProviders::add);
@@ -53,7 +55,7 @@ public class MorphiaCodecProvider implements CodecProvider {
 
     @Nullable
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> Codec<T> get(Class<T> type, CodecRegistry registry) {
         MorphiaCodec<T> codec = (MorphiaCodec<T>) codecs.get(type);
         if (codec == null && (mapper.isMapped(type) || mapper.isMappable(type))) {

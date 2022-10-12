@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
  * @param <T>
  * @morphia.internal
  */
+@MorphiaInternal
 public abstract class UpdateBase<T> {
 
     private final Query<T> query;
@@ -29,10 +30,10 @@ public abstract class UpdateBase<T> {
     private final DatastoreImpl datastore;
 
     UpdateBase(DatastoreImpl datastore,
-               @Nullable MongoCollection<T> collection,
-               @Nullable Query<T> query,
-               Class<T> type,
-               List<UpdateOperator> updates) {
+            @Nullable MongoCollection<T> collection,
+            @Nullable Query<T> query,
+            Class<T> type,
+            List<UpdateOperator> updates) {
         this.datastore = datastore;
         this.mapper = datastore.getMapper();
         this.type = type;
@@ -56,6 +57,7 @@ public abstract class UpdateBase<T> {
      * @morphia.internal
      * @since 2.2
      */
+    @MorphiaInternal
     public void add(UpdateOperator operator) {
         updates.add(operator);
     }

@@ -1,6 +1,7 @@
 package dev.morphia.aggregation.expressions.impls;
 
 import dev.morphia.Datastore;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 
@@ -24,10 +25,11 @@ public class ReplaceExpression extends Expression {
      * @param replacement the replacement value
      * @morphia.internal
      */
+    @MorphiaInternal
     public ReplaceExpression(String operator,
-                             Expression input,
-                             Expression find,
-                             Expression replacement) {
+            Expression input,
+            Expression find,
+            Expression replacement) {
         super(operator);
         this.input = input;
         this.find = find;

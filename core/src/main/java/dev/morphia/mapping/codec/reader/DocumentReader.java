@@ -1,6 +1,7 @@
 package dev.morphia.mapping.codec.reader;
 
 import com.mongodb.lang.Nullable;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.codec.BsonTypeMap;
 import dev.morphia.mapping.codec.Conversions;
 import dev.morphia.sofia.Sofia;
@@ -28,6 +29,7 @@ import static java.lang.String.format;
 /**
  * @morphia.internal
  */
+@MorphiaInternal
 public class DocumentReader implements BsonReader {
     private static final BsonTypeMap TYPE_MAP = new BsonTypeMap();
     private final ReaderState start;
@@ -199,7 +201,7 @@ public class DocumentReader implements BsonReader {
 
     @Override
     public String readJavaScript() {
-        return stage().<BsonJavaScript>value().getCode();
+        return stage().<BsonJavaScript> value().getCode();
     }
 
     @Override
@@ -210,7 +212,7 @@ public class DocumentReader implements BsonReader {
 
     @Override
     public String readJavaScriptWithScope() {
-        return stage().<BsonJavaScriptWithScope>value().getCode();
+        return stage().<BsonJavaScriptWithScope> value().getCode();
     }
 
     @Override
@@ -369,7 +371,7 @@ public class DocumentReader implements BsonReader {
         String actualName = readName();
         if (!actualName.equals(expectedName)) {
             throw new BsonSerializationException(format("Expected element name to be '%s', not '%s'.",
-                expectedName, actualName));
+                    expectedName, actualName));
         }
     }
 
@@ -386,7 +388,7 @@ public class DocumentReader implements BsonReader {
             location = location.nextState();
         }
         return joiner
-                   .toString();
+                .toString();
     }
 
     BsonType getBsonType(@Nullable Object o) {

@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.morphia.morphia</groupId>
         <artifactId>morphia</artifactId>
-        <version>2.2.7.TRAVELC.1</version>
+        <version>2.3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -32,7 +32,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>test-jar</id>
@@ -41,26 +41,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <!--
-            <plugin>
-                <groupId>com.antwerkz.github</groupId>
-                <artifactId>issues-maven-plugin</artifactId>
-                <version>1.1.7</version>
-                <executions>
-                    <execution>
-                        <id>issues</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <phase>deploy</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <repository>MorphiaOrg/morphia</repository>
-                    <docsUrl>https://morphia.dev/morphia/2.3</docsUrl>
-                    <javadocUrl>https://morphia.dev/morphia/2.3/javadoc</javadocUrl>
-                </configuration>
             </plugin>
             -->
             <plugin>
@@ -114,7 +94,7 @@
                 <configuration>
                     <failOnError>true</failOnError>
                     <!--                    <excludePackageNames>*.internal, dev.morphia.sofia</excludePackageNames>-->
-                    <excludePackageNames>dev.morphia.sofia,dev.morphia.annotations.builders</excludePackageNames>
+                    <excludePackageNames>dev.morphia.sofia:*.internal:*.impls</excludePackageNames>
                     <doclint>none</doclint>
                     <doctitle>Morphia ${project.version}</doctitle>
                     <links>
@@ -165,7 +145,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.13</version>
+            <version>1.12.18</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -180,7 +160,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.7.1</version>
+            <version>4.7.2</version>
             <scope>compile</scope>
         </dependency>
 
@@ -193,10 +173,6 @@
             <artifactId>jsonassert</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.antwerkz.bottlerocket</groupId>
             <artifactId>bottlerocket</artifactId>
             <scope>test</scope>
@@ -206,16 +182,23 @@
             <artifactId>zt-exec</artifactId>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
-            <version>3.8.6</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

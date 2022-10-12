@@ -1,7 +1,7 @@
 package dev.morphia.query;
 
-
 import dev.morphia.Datastore;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.internal.PathTarget;
 import dev.morphia.mapping.codec.pojo.EntityModel;
 import org.bson.Document;
@@ -13,6 +13,7 @@ import java.util.Map;
  * @morphia.internal
  */
 @SuppressWarnings("removal")
+@MorphiaInternal
 @Deprecated(since = "2.0", forRemoval = true)
 class FieldCriteria extends AbstractCriteria {
     private final String field;
@@ -22,17 +23,17 @@ class FieldCriteria extends AbstractCriteria {
     private final Datastore datastore;
 
     FieldCriteria(Datastore datastore, String field, FilterOperator op, Object value, EntityModel model,
-                  boolean validating) {
+            boolean validating) {
         this(datastore, field, op, value, false, model, validating);
     }
 
     FieldCriteria(Datastore datastore,
-                  String fieldName,
-                  FilterOperator op,
-                  Object value,
-                  boolean not,
-                  EntityModel model,
-                  boolean validating) {
+            String fieldName,
+            FilterOperator op,
+            Object value,
+            boolean not,
+            EntityModel model,
+            boolean validating) {
         this.datastore = datastore;
         final PathTarget pathTarget = new PathTarget(datastore.getMapper(), model, fieldName, validating);
 

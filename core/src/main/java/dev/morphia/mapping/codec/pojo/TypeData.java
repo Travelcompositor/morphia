@@ -1,5 +1,6 @@
 package dev.morphia.mapping.codec.pojo;
 
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.sofia.Sofia;
 import org.bson.codecs.pojo.TypeWithTypeParameters;
 
@@ -25,6 +26,7 @@ import static org.bson.assertions.Assertions.notNull;
  * @morphia.internal
  * @since 2.0
  */
+@MorphiaInternal
 @SuppressWarnings("unchecked")
 public class TypeData<T> implements TypeWithTypeParameters<T> {
 
@@ -43,7 +45,7 @@ public class TypeData<T> implements TypeWithTypeParameters<T> {
      * </code>
      * </pre>
      *
-     * @param type the type
+     * @param type           the type
      * @param typeParameters the parameters
      */
     public TypeData(Class<T> type, List<TypeData<?>> typeParameters) {
@@ -62,7 +64,7 @@ public class TypeData<T> implements TypeWithTypeParameters<T> {
         return new Builder<>(notNull("type", type));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static TypeData<?> getTypeData(Type type) {
         if (type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) type;
@@ -75,8 +77,8 @@ public class TypeData<T> implements TypeWithTypeParameters<T> {
             WildcardType wildcardType = (WildcardType) type;
             Type[] upperBounds = wildcardType.getUpperBounds();
             Type[] bounds = upperBounds != null
-                            ? upperBounds
-                            : wildcardType.getLowerBounds();
+                    ? upperBounds
+                    : wildcardType.getLowerBounds();
             return WildCardTypeData.builder(getTypeData(bounds[0]), upperBounds != null).build();
         } else if (type instanceof TypeVariable) {
             return TypeData.builder(Object.class).build();
@@ -142,18 +144,21 @@ public class TypeData<T> implements TypeWithTypeParameters<T> {
      */
     public static <T> TypeData<T> newInstance(Type genericType) {
         /*
-          TypeData.Builder<T> builder = TypeData.builder(clazz);
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pType = (ParameterizedType) genericType;
-            for (Type argType : pType.getActualTypeArguments()) {
-                builder.addTypeParameter(getTypeData(argType));
-            }
-        }
-        return builder.build();
+         * TypeData.Builder<T> builder = TypeData.builder(clazz);
+         * if (genericType instanceof ParameterizedType) {
+         * ParameterizedType pType = (ParameterizedType) genericType;
+         * for (Type argType : pType.getActualTypeArguments()) {
+         * builder.addTypeParameter(getTypeData(argType));
+         * }
+         * }
+         * return builder.build();
          */
         return (TypeData<T>) getTypeData(genericType);
     }
 
+    /**
+     * @return true if an array
+     */
     public boolean getArray() {
         return array;
     }
@@ -198,10 +203,16 @@ public class TypeData<T> implements TypeWithTypeParameters<T> {
         return getTypeParameters().equals(that.getTypeParameters());
     }
 
+    /**
+     * @return true if an array
+     */
     public boolean isArray() {
         return array;
     }
 
+    /**
+     * @param array
+     */
     public void setArray(boolean array) {
         this.array = array;
     }
@@ -220,17 +231,17 @@ public class TypeData<T> implements TypeWithTypeParameters<T> {
         return value;
     }
 
-/*
-    @Override
-    public String toString() {
-        String typeParams = typeParameters.isEmpty() ? ""
-                                                     : ", typeParameters=[" + nestedTypeParameters(typeParameters) + "]";
-        return "TypeData{"
-               + "type=" + type.getSimpleName()
-               + typeParams
-               + "}";
-    }
-*/
+    /*
+     * @Override
+     * public String toString() {
+     * String typeParams = typeParameters.isEmpty() ? ""
+     * : ", typeParameters=[" + nestedTypeParameters(typeParameters) + "]";
+     * return "TypeData{"
+     * + "type=" + type.getSimpleName()
+     * + typeParams
+     * + "}";
+     * }
+     */
 
     /**
      * Creates a new TypeData with an updated type

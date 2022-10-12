@@ -1,6 +1,7 @@
 package dev.morphia.aggregation.stages;
 
 import dev.morphia.aggregation.expressions.impls.Expression;
+import dev.morphia.annotations.internal.MorphiaInternal;
 
 import static dev.morphia.aggregation.expressions.Expressions.field;
 
@@ -29,7 +30,7 @@ public class Unwind extends Stage {
     @Deprecated(forRemoval = true)
     public static Unwind on(String name) {
         return new Unwind()
-                   .path(name);
+                .path(name);
     }
 
     /**
@@ -41,13 +42,14 @@ public class Unwind extends Stage {
      */
     public static Unwind unwind(String name) {
         return new Unwind()
-                   .path(name);
+                .path(name);
     }
 
     /**
      * @return the value
      * @morphia.internal
      */
+    @MorphiaInternal
     public String getIncludeArrayIndex() {
         return includeArrayIndex;
     }
@@ -56,6 +58,7 @@ public class Unwind extends Stage {
      * @return the value
      * @morphia.internal
      */
+    @MorphiaInternal
     public Expression getPath() {
         return path;
     }
@@ -64,6 +67,7 @@ public class Unwind extends Stage {
      * @return the value
      * @morphia.internal
      */
+    @MorphiaInternal
     public Boolean getPreserveNullAndEmptyArrays() {
         return preserveNullAndEmptyArrays;
     }
@@ -83,9 +87,10 @@ public class Unwind extends Stage {
      * @return the value
      * @morphia.internal
      */
+    @MorphiaInternal
     public boolean optionsPresent() {
         return includeArrayIndex != null
-               || preserveNullAndEmptyArrays != null;
+                || preserveNullAndEmptyArrays != null;
     }
 
     /**

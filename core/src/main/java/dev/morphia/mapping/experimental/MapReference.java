@@ -3,6 +3,7 @@ package dev.morphia.mapping.experimental;
 import com.mongodb.DBRef;
 import com.mongodb.client.MongoCursor;
 import dev.morphia.Datastore;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.codec.pojo.EntityModel;
 import dev.morphia.mapping.codec.pojo.PropertyModel;
@@ -23,7 +24,8 @@ import static dev.morphia.query.filters.Filters.in;
  * @param <T>
  * @morphia.internal
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
+@MorphiaInternal
+@SuppressWarnings({ "rawtypes", "unchecked" })
 @Deprecated(forRemoval = true, since = "2.3")
 public class MapReference<T> extends MorphiaReference<Map<Object, T>> {
     private Map<String, Object> ids;
@@ -37,6 +39,7 @@ public class MapReference<T> extends MorphiaReference<Map<Object, T>> {
      * @param entityModel the model of the entity type
      * @morphia.internal
      */
+    @MorphiaInternal
     public MapReference(Datastore datastore, Mapper mapper, Map<String, Object> ids, EntityModel entityModel) {
         super(datastore, mapper);
         for (Entry<String, Object> entry : ids.entrySet()) {
@@ -63,7 +66,7 @@ public class MapReference<T> extends MorphiaReference<Map<Object, T>> {
      * @return the entities
      */
     public static MapReference decode(Datastore datastore, Mapper mapper, PropertyModel property,
-                                      Document document) {
+            Document document) {
         final Class subType = property.getTypeData().getTypeParameters().get(0).getType();
 
         final Map<String, Object> ids = (Map<String, Object>) property.getDocumentValue(document);
@@ -109,8 +112,8 @@ public class MapReference<T> extends MorphiaReference<Map<Object, T>> {
         if (ids == null) {
             ids = new LinkedHashMap<>();
             values.entrySet().stream()
-                  .forEach(e -> ids.put(e.getKey().toString(),
-                      ReferenceCodec.encodeId(mapper, e.getValue(), field)));
+                    .forEach(e -> ids.put(e.getKey().toString(),
+                            ReferenceCodec.encodeId(mapper, e.getValue(), field)));
         }
         return ids;
     }
@@ -126,7 +129,7 @@ public class MapReference<T> extends MorphiaReference<Map<Object, T>> {
     private void readFromSingleCollection(String collection, List<Object> collectionIds) {
 
         try (MongoCursor<T> cursor = (MongoCursor<T>) getDatastore().find(collection)
-                                                                    .filter(in("_id", collectionIds)).iterator()) {
+                .filter(in("_id", collectionIds)).iterator()) {
             final Map<Object, T> idMap = new HashMap<>();
             while (cursor.hasNext()) {
                 final T entity = cursor.next();

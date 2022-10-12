@@ -1,12 +1,16 @@
 package dev.morphia.aggregation;
 
+import dev.morphia.aggregation.expressions.impls.DocumentExpression;
 import dev.morphia.aggregation.expressions.impls.Expression;
 import dev.morphia.aggregation.stages.AddFields;
 import dev.morphia.aggregation.stages.AutoBucket;
 import dev.morphia.aggregation.stages.Bucket;
+import dev.morphia.aggregation.stages.ChangeStream;
 import dev.morphia.aggregation.stages.CollectionStats;
 import dev.morphia.aggregation.stages.CurrentOp;
+import dev.morphia.aggregation.stages.Densify;
 import dev.morphia.aggregation.stages.Facet;
+import dev.morphia.aggregation.stages.Fill;
 import dev.morphia.aggregation.stages.GeoNear;
 import dev.morphia.aggregation.stages.GraphLookup;
 import dev.morphia.aggregation.stages.Group;
@@ -27,24 +31,10 @@ import dev.morphia.query.filters.Filter;
 import dev.morphia.query.internal.MorphiaCursor;
 
 /**
- * @param <T> The initial type of the aggregation.  Used for collection name resolution.
+ * @param <T> The initial type of the aggregation. Used for collection name resolution.
  * @since 2.0
  */
 public interface Aggregation<T> {
-    /**
-     * Adds new fields to documents. $addFields outputs documents that contain all existing fields from the input documents and newly
-     * added fields.
-     * <p>
-     * The $addFields stage is equivalent to a $project stage that explicitly specifies all existing fields in the input documents and
-     * adds the new fields.
-     *
-     * @param fields the stage definition
-     * @return this
-     * @aggregation.expression $addFields
-     * @mongodb.server.release 3.4
-     */
-    Aggregation<T> addFields(AddFields fields);
-
     /**
      * Categorizes incoming documents into a specific number of groups, called buckets, based on a specified expression. Bucket
      * boundaries are automatically determined in an attempt to evenly distribute the documents into the specified number of buckets.
@@ -116,6 +106,28 @@ public interface Aggregation<T> {
     Aggregation<T> currentOp(CurrentOp currentOp);
 
     /**
+     * Creates new documents in a sequence of documents where certain values in a field are missing.
+     *
+     * @param densify the Densify stage
+     * @return this
+     * @mongodb.server.release 5.1
+     * @aggregation.expression $densify
+     * @since 2.3
+     */
+    Aggregation<T> densify(Densify densify);
+
+    /**
+     * Returns literal documents from input values.
+     *
+     * @param documents the documents to use
+     * @return this
+     * @mongodb.server.release 5.1
+     * @aggregation.expression $documents
+     * @since 2.3
+     */
+    Aggregation<T> documents(DocumentExpression... documents);
+
+    /**
      * Execute the aggregation and get the results.
      *
      * @param resultType the type of the result
@@ -151,6 +163,23 @@ public interface Aggregation<T> {
      * @mongodb.server.release 3.4
      */
     Aggregation<T> facet(Facet facet);
+
+    /**
+     * Populates null and missing field values within documents.
+     * <p>
+     * You can use $fill to populate missing data points:
+     * <ul>
+     * <li>In a sequence based on surrounding values.
+     * <li>With a fixed value.
+     * </ul>
+     *
+     * @param fill the fill definition
+     * @return this
+     * @aggregation.expression $fill
+     * @mongodb.server.release 5.3
+     * @since 2.3
+     */
+    Aggregation<T> fill(Fill fill);
 
     /**
      * Outputs documents in order of nearest to farthest from a specified point.
@@ -326,23 +355,6 @@ public interface Aggregation<T> {
     Aggregation<T> sample(long sample);
 
     /**
-     * Adds new fields to documents. $set outputs documents that contain all existing fields from the input documents and newly added
-     * fields.
-     * <p>
-     * The $set stage is an alias for $addFields.
-     * <p>
-     * Both stages are equivalent to a $project stage that explicitly specifies all existing fields in the input documents and adds the
-     * new fields.
-     *
-     * @param set the stage to add
-     * @return this
-     * @since 2.3
-     * @aggregation.expression $set
-     * @mongodb.server.release 4.2
-     */
-    Aggregation<T> set(Set set);
-
-    /**
      * Adds new fields to documents. $addFields outputs documents that contain all existing fields from the input documents and newly
      * added fields.
      * <p>
@@ -357,6 +369,37 @@ public interface Aggregation<T> {
     default Aggregation<T> set(AddFields fields) {
         return addFields(fields);
     }
+
+    /**
+     * Adds new fields to documents. $addFields outputs documents that contain all existing fields from the input documents and newly
+     * added fields.
+     * <p>
+     * The $addFields stage is equivalent to a $project stage that explicitly specifies all existing fields in the input documents and
+     * adds the new fields.
+     *
+     * @param fields the stage definition
+     * @return this
+     * @aggregation.expression $addFields
+     * @mongodb.server.release 3.4
+     */
+    Aggregation<T> addFields(AddFields fields);
+
+    /**
+     * Adds new fields to documents. $set outputs documents that contain all existing fields from the input documents and newly added
+     * fields.
+     * <p>
+     * The $set stage is an alias for $addFields.
+     * <p>
+     * Both stages are equivalent to a $project stage that explicitly specifies all existing fields in the input documents and adds the
+     * new fields.
+     *
+     * @param set the stage to add
+     * @return this
+     * @aggregation.expression $set
+     * @mongodb.server.release 4.2
+     * @since 2.3
+     */
+    Aggregation<T> set(Set set);
 
     /**
      * @param fields
@@ -430,7 +473,7 @@ public interface Aggregation<T> {
     Aggregation<T> unionWith(String collection, Stage first, Stage... others);
 
     /**
-     * Removes/excludes fields from documents.  Names must not start with '$'.
+     * Removes/excludes fields from documents. Names must not start with '$'.
      *
      * @param unset the unset definition
      * @return this
@@ -448,4 +491,26 @@ public interface Aggregation<T> {
      * @aggregation.expression $unwind
      */
     Aggregation<T> unwind(Unwind unwind);
+
+    /**
+     * Returns a Change Stream cursor on a collection, a database, or an entire cluster. Must be used as the first stage in an
+     * aggregation pipeline.
+     *
+     * @return this
+     * @since 2.3
+     * @aggregation.expression $changeStream
+     */
+    Aggregation changeStream();
+
+    /**
+     * Returns a Change Stream cursor on a collection, a database, or an entire cluster. Must be used as the first stage in an
+     * aggregation pipeline.
+     *
+     * @param stream the options to apply to the stage
+     *
+     * @return this
+     * @since 2.3
+     * @aggregation.expression $changeStream
+     */
+    Aggregation changeStream(ChangeStream stream);
 }

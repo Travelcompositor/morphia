@@ -24,6 +24,7 @@ import dev.morphia.annotations.AlsoLoad;
 import dev.morphia.annotations.Handler;
 import dev.morphia.annotations.Reference;
 import dev.morphia.annotations.Transient;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.MappingException;
 import dev.morphia.mapping.codec.Conversions;
@@ -55,6 +56,7 @@ import static java.util.Arrays.asList;
  * @morphia.internal
  * @since 2.0
  */
+@MorphiaInternal
 @SuppressWarnings("removal")
 public final class PropertyModel {
     private final String name;
@@ -101,6 +103,7 @@ public final class PropertyModel {
      * @return the unwrapped type
      * @morphia.internal
      */
+    @MorphiaInternal
     public static Class<?> normalize(TypeData<?> toNormalize) {
         Class<?> type;
         TypeData<?> typeData = toNormalize;
@@ -134,14 +137,14 @@ public final class PropertyModel {
         return type.cast(annotationMap.get(type));
     }
 
-    public Codec<?> getCodec() {
+    Codec<?> getCodec() {
         return codec;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getName(), getTypeData(), getMappedName(), codec, getAccessor(), serialization,
-            annotationMap.values(), getNormalizedType());
+                annotationMap.values(), getNormalizedType());
     }
 
     /**
@@ -250,12 +253,12 @@ public final class PropertyModel {
         }
         final PropertyModel that = (PropertyModel) o;
         return getName().equals(that.getName())
-               && getTypeData().equals(that.getTypeData())
-               && getMappedName().equals(that.getMappedName())
-               && Objects.equals(codec, that.codec)
-               && getAccessor().equals(that.getAccessor())
-               && serialization.equals(that.serialization)
-               && Objects.equals(getNormalizedType(), that.getNormalizedType());
+                && getTypeData().equals(that.getTypeData())
+                && getMappedName().equals(that.getMappedName())
+                && Objects.equals(codec, that.codec)
+                && getAccessor().equals(that.getAccessor())
+                && serialization.equals(that.serialization)
+                && Objects.equals(getNormalizedType(), that.getNormalizedType());
     }
 
     /**
@@ -273,11 +276,11 @@ public final class PropertyModel {
     @Override
     public String toString() {
         return new StringJoiner(", ", PropertyModel.class.getSimpleName() + "[", "]")
-            .add("name='" + name + "'")
-            .add("mappedName='" + mappedName + "'")
-            .add("typeData=" + typeData)
-            .add("annotations=" + annotationMap.values())
-            .toString();
+                .add("name='" + name + "'")
+                .add("mappedName='" + mappedName + "'")
+                .add("typeData=" + typeData)
+                .add("annotations=" + annotationMap.values())
+                .toString();
     }
 
     /**
@@ -330,8 +333,8 @@ public final class PropertyModel {
      */
     public boolean isTransient() {
         return !hasAnnotation(Transient.class)
-               && !hasAnnotation(java.beans.Transient.class)
-               && Modifier.isTransient(getType().getModifiers());
+                && !hasAnnotation(java.beans.Transient.class)
+                && Modifier.isTransient(getType().getModifiers());
     }
 
     /**
@@ -359,8 +362,8 @@ public final class PropertyModel {
         if (handler != null) {
             try {
                 codec = handler.value()
-                               .getDeclaredConstructor(Datastore.class, PropertyModel.class)
-                               .newInstance(datastore, this);
+                        .getDeclaredConstructor(Datastore.class, PropertyModel.class)
+                        .newInstance(datastore, this);
             } catch (ReflectiveOperationException e) {
                 throw new MappingException(e.getMessage(), e);
             }
@@ -373,8 +376,8 @@ public final class PropertyModel {
 
         if (handler == null) {
             handler = (Handler) annotationMap.values()
-                                             .stream().filter(a -> a.getClass().equals(Handler.class))
-                                             .findFirst().orElse(null);
+                    .stream().filter(a -> a.getClass().equals(Handler.class))
+                    .findFirst().orElse(null);
             if (handler == null) {
                 Iterator<Annotation> iterator = annotationMap.values().iterator();
                 while (handler == null && iterator.hasNext()) {

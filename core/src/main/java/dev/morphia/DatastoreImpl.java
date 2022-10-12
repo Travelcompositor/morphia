@@ -22,10 +22,10 @@ import dev.morphia.aggregation.AggregationImpl;
 import dev.morphia.aggregation.codecs.AggregationCodecProvider;
 import dev.morphia.annotations.CappedAt;
 import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.IndexHelper;
 import dev.morphia.annotations.ShardKeys;
 import dev.morphia.annotations.ShardOptions;
 import dev.morphia.annotations.Validation;
+import dev.morphia.annotations.internal.IndexHelper;
 import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.internal.CollectionConfigurable;
 import dev.morphia.internal.CollectionConfiguration;
@@ -90,9 +90,9 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
  * @morphia.internal
  */
 @MorphiaInternal
-@SuppressWarnings({"unchecked", "rawtypes", "removal"})
+@SuppressWarnings({ "unchecked", "rawtypes", "removal" })
 public class DatastoreImpl implements AdvancedDatastore {
-    private static final Logger LOG = LoggerFactory.getLogger(DatastoreImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Datastore.class);
     private final MongoClient mongoClient;
     private final Mapper mapper;
     private final QueryFactory queryFactory;
@@ -119,9 +119,9 @@ public class DatastoreImpl implements AdvancedDatastore {
         }
 
         providers.addAll(List.of(new MorphiaTypesCodecProvider(this),
-            new PrimitiveCodecRegistry(codecRegistry),
-            new EnumCodecProvider(),
-            new AggregationCodecProvider(this)));
+                new PrimitiveCodecRegistry(codecRegistry),
+                new EnumCodecProvider(),
+                new AggregationCodecProvider(this)));
 
         providers.addAll(morphiaCodecProviders);
         providers.add(codecRegistry);
@@ -169,26 +169,26 @@ public class DatastoreImpl implements AdvancedDatastore {
 
         String alternate = options.collection();
         if (alternate != null && grouped.size() > 1) {
-            Sofia.logInsertManyAlternateCollection();
+            LOG.warn(Sofia.insertManyAlternateCollection(alternate));
         }
 
         grouped.entrySet().stream()
-               .forEach(entry -> {
-                   List<T> list = entry.getValue();
+                .forEach(entry -> {
+                    List<T> list = entry.getValue();
 
-                   List<VersionBumpInfo> infos = list.stream()
-                                                     .map(this::updateVersioning)
-                                                     .collect(Collectors.toList());
+                    List<VersionBumpInfo> infos = list.stream()
+                            .map(this::updateVersioning)
+                            .collect(Collectors.toList());
 
-                   try {
-                       MongoCollection<T> collection = configureCollection(options,
-                           (MongoCollection<T>) getCollection(entry.getKey()));
-                       operations.insertMany(collection, list, options);
-                   } catch (MongoException e) {
-                       infos.forEach(VersionBumpInfo::rollbackVersion);
-                       throw e;
-                   }
-               });
+                    try {
+                        MongoCollection<T> collection = configureCollection(options,
+                                (MongoCollection<T>) getCollection(entry.getKey()));
+                        operations.insertMany(collection, list, options);
+                    } catch (MongoException e) {
+                        infos.forEach(VersionBumpInfo::rollbackVersion);
+                        throw e;
+                    }
+                });
     }
 
     @Override
@@ -249,10 +249,10 @@ public class DatastoreImpl implements AdvancedDatastore {
         }
         Object id = mapper.getId(entity);
         return id != null
-               ? find(entity.getClass())
-                     .filter(eq("_id", id))
-                     .delete(options)
-               : new NoDeleteResult();
+                ? find(entity.getClass())
+                        .filter(eq("_id", id))
+                        .delete(options)
+                : new NoDeleteResult();
     }
 
     @Override
@@ -270,7 +270,7 @@ public class DatastoreImpl implements AdvancedDatastore {
     @Override
     public void ensureIndexes() {
         if (mapper.getMappedEntities().isEmpty()) {
-            Sofia.logNoMappedClasses();
+            LOG.warn(Sofia.noMappedClasses());
         }
         final IndexHelper indexHelper = new IndexHelper(mapper);
         for (EntityModel model : mapper.getMappedEntities()) {
@@ -283,7 +283,9 @@ public class DatastoreImpl implements AdvancedDatastore {
     public <T> void ensureIndexes(Class<T> type) {
         EntityModel model = mapper.getEntityModel(type);
         final IndexHelper indexHelper = new IndexHelper(mapper);
-        indexHelper.createIndex(getCollection(type), model);
+        if (model.getIdProperty() != null) {
+            indexHelper.createIndex(getCollection(type), model);
+        }
     }
 
     @Override
@@ -340,11 +342,11 @@ public class DatastoreImpl implements AdvancedDatastore {
         if (options.isLogQuery()) {
             String json = "{}";
             Document first = getDatabase()
-                                 .getCollection("system.profile")
-                                 .find(new Document("command.comment", "logged query: " + options.queryLogId()),
-                                     Document.class)
-                                 .projection(new Document("command.filter", 1))
-                                 .first();
+                    .getCollection("system.profile")
+                    .find(new Document("command.comment", "logged query: " + options.queryLogId()),
+                            Document.class)
+                    .projection(new Document("command.filter", 1))
+                    .first();
             if (first != null) {
                 Document command = (Document) first.get("command");
                 Document filter = (Document) command.get("filter");
@@ -385,8 +387,8 @@ public class DatastoreImpl implements AdvancedDatastore {
                     throw new VersionMismatchException(entity.getClass(), id);
                 } else if (!entityModel.getShardKeys().isEmpty()) {
                     throw new MappingException(noShardKeyMatch(entityModel.getShardKeys()
-                                                                          .stream().map(PropertyModel::getMappedName)
-                                                                          .collect(joining(", "))));
+                            .stream().map(PropertyModel::getMappedName)
+                            .collect(joining(", "))));
                 } else {
                     throw new MappingException(noDocumentsUpdated(id));
                 }
@@ -409,7 +411,7 @@ public class DatastoreImpl implements AdvancedDatastore {
                     final CappedAt cap = entityAnnotation.cap();
                     final String collName = model.getCollectionName();
                     final CreateCollectionOptions dbCapOpts = new CreateCollectionOptions()
-                                                                  .capped(true);
+                            .capped(true);
                     if (cap.value() > 0) {
                         dbCapOpts.sizeInBytes(cap.value());
                     }
@@ -423,7 +425,7 @@ public class DatastoreImpl implements AdvancedDatastore {
                             LOG.debug("MongoCollection already exists and is capped already; doing nothing. " + dbResult);
                         } else {
                             LOG.warn("MongoCollection already exists with same name(" + collName
-                                     + ") and is not capped; not creating capped version!");
+                                    + ") and is not capped; not creating capped version!");
                         }
                     } else {
                         getDatabase().createCollection(collName, dbCapOpts);
@@ -451,11 +453,11 @@ public class DatastoreImpl implements AdvancedDatastore {
             update = query.update(set(entity));
         } else {
             update = ((MergingEncoder<T>) new MergingEncoder(query,
-                (MorphiaCodec) codecRegistry.get(entity.getClass())))
-                         .encode(entity);
+                    (MorphiaCodec) codecRegistry.get(entity.getClass())))
+                    .encode(entity);
         }
         UpdateResult execute = update.execute(new UpdateOptions()
-                                                  .writeConcern(options.writeConcern()));
+                .writeConcern(options.writeConcern()));
         if (execute.getModifiedCount() != 1) {
             if (info.versioned()) {
                 info.rollbackVersion();
@@ -481,8 +483,8 @@ public class DatastoreImpl implements AdvancedDatastore {
     @Override
     public void shardCollections() {
         var entities = getMapper().getMappedEntities()
-                                  .stream().filter(m -> m.getAnnotation(ShardKeys.class) != null)
-                                  .collect(Collectors.toList());
+                .stream().filter(m -> m.getAnnotation(ShardKeys.class) != null)
+                .collect(Collectors.toList());
 
         operations.runCommand(new Document("enableSharding", database.getName()));
 
@@ -508,8 +510,8 @@ public class DatastoreImpl implements AdvancedDatastore {
                 ShardOptions options = shardKeys.options();
 
                 Document command = new Document("shardCollection", format("%s.%s", getDatabase().getName(), model.getCollectionName()))
-                                       .append("unique", options.unique())
-                                       .append("presplitHashedZones", options.presplitHashedZones());
+                        .append("unique", options.unique())
+                        .append("presplitHashedZones", options.presplitHashedZones());
                 var hashed = stream(shardKeys.value()).anyMatch(k -> k.type() == ShardKeyType.HASHED);
                 if (hashed) {
                     if (options.numInitialChunks() != -1) {
@@ -521,16 +523,27 @@ public class DatastoreImpl implements AdvancedDatastore {
                     command.append("collation", new Document("locale", "simple"));
                 }
                 command.append("key", stream(shardKeys.value())
-                                          .map(k -> new Document(k.value(), k.type().queryForm()))
-                                          .reduce(new Document(), (a, m) -> {
-                                              a.putAll(m);
-                                              return a;
-                                          }));
+                        .map(k -> new Document(k.value(), queryForm(k.type())))
+                        .reduce(new Document(), (a, m) -> {
+                            a.putAll(m);
+                            return a;
+                        }));
 
                 return operations.runCommand(command);
             }
         }
         return new Document();
+    }
+
+    private Object queryForm(ShardKeyType type) {
+        switch (type) {
+            case HASHED:
+                return "hashed";
+            case RANGED:
+                return 1;
+        }
+
+        throw new IllegalStateException("Every shard key type should be handled.");
     }
 
     @Override
@@ -550,13 +563,13 @@ public class DatastoreImpl implements AdvancedDatastore {
                 list.add(entity);
             } else {
                 grouped.computeIfAbsent(type, c -> new ArrayList<>())
-                       .add(entity);
+                        .add(entity);
             }
         }
 
         String alternate = options.collection();
         if (grouped.size() > 1 && alternate != null) {
-            Sofia.logInsertManyAlternateCollection();
+            LOG.warn(Sofia.insertManyAlternateCollection(alternate));
         }
 
         for (Entry<Class<?>, List<T>> entry : grouped.entrySet()) {
@@ -565,9 +578,9 @@ public class DatastoreImpl implements AdvancedDatastore {
         }
 
         InsertOneOptions insertOneOptions = new InsertOneOptions()
-                                                .bypassDocumentValidation(options.bypassDocumentValidation())
-                                                .collection(alternate)
-                                                .writeConcern(options.writeConcern());
+                .bypassDocumentValidation(options.bypassDocumentValidation())
+                .collection(alternate)
+                .writeConcern(options.writeConcern());
         for (T entity : list) {
             save(entity, insertOneOptions);
         }
@@ -586,14 +599,14 @@ public class DatastoreImpl implements AdvancedDatastore {
 
         MongoCollection<?> collection = getCollection(entity.getClass());
         PropertyModel idField = mapper.getEntityModel(entity.getClass())
-                                      .getIdProperty();
+                .getIdProperty();
         if (idField == null) {
             throw new MappingException(Sofia.idRequired(entity.getClass().getName()));
         }
 
         Document id = collection.find(new Document("_id", idField.getValue(entity)), Document.class)
-                                .iterator()
-                                .next();
+                .iterator()
+                .next();
 
         refreshCodec.decode(new DocumentReader(id), DecoderContext.builder().checkedDiscriminator(true).build());
     }
@@ -664,21 +677,22 @@ public class DatastoreImpl implements AdvancedDatastore {
      * @param validation internal
      * @morphia.internal
      */
+    @MorphiaInternal
     public void enableValidation(EntityModel model, Validation validation) {
         String collectionName = model.getCollectionName();
         try {
             getDatabase().runCommand(new Document("collMod", collectionName)
-                                         .append("validator", parse(validation.value()))
-                                         .append("validationLevel", validation.level().getValue())
-                                         .append("validationAction", validation.action().getValue()));
+                    .append("validator", parse(validation.value()))
+                    .append("validationLevel", validation.level().getValue())
+                    .append("validationAction", validation.action().getValue()));
         } catch (MongoCommandException e) {
             if (e.getCode() == 26) {
                 getDatabase().createCollection(collectionName,
-                    new CreateCollectionOptions()
-                        .validationOptions(new ValidationOptions()
-                                               .validator(parse(validation.value()))
-                                               .validationLevel(validation.level())
-                                               .validationAction(validation.action())));
+                        new CreateCollectionOptions()
+                                .validationOptions(new ValidationOptions()
+                                        .validator(parse(validation.value()))
+                                        .validationLevel(validation.level())
+                                        .validationAction(validation.action())));
             } else {
                 throw e;
             }
@@ -703,8 +717,8 @@ public class DatastoreImpl implements AdvancedDatastore {
                 operations.insertOne(collection, entity, options);
             } else {
                 ReplaceOptions updateOptions = new ReplaceOptions()
-                                                   .bypassDocumentValidation(options.bypassDocumentValidation())
-                                                   .upsert(true);
+                        .bypassDocumentValidation(options.bypassDocumentValidation())
+                        .upsert(true);
                 Document filter = new Document("_id", id);
                 info.filter(filter);
                 entityModel.getShardKeys().forEach((property) -> {
@@ -731,7 +745,6 @@ public class DatastoreImpl implements AdvancedDatastore {
      * Enables any document validation defined on the class
      *
      * @param model the model to use
-     * @morphia.internal
      */
     private void enableDocumentValidation(EntityModel model) {
         Validation validation = model.getAnnotation(Validation.class);
@@ -739,17 +752,17 @@ public class DatastoreImpl implements AdvancedDatastore {
         if (validation != null) {
             try {
                 getDatabase().runCommand(new Document("collMod", collectionName)
-                                             .append("validator", parse(validation.value()))
-                                             .append("validationLevel", validation.level().getValue())
-                                             .append("validationAction", validation.action().getValue()));
+                        .append("validator", parse(validation.value()))
+                        .append("validationLevel", validation.level().getValue())
+                        .append("validationAction", validation.action().getValue()));
             } catch (MongoCommandException e) {
                 if (e.getCode() == 26) {
                     database.createCollection(collectionName,
-                        new CreateCollectionOptions()
-                            .validationOptions(new ValidationOptions()
-                                                   .validator(parse(validation.value()))
-                                                   .validationLevel(validation.level())
-                                                   .validationAction(validation.action())));
+                            new CreateCollectionOptions()
+                                    .validationOptions(new ValidationOptions()
+                                            .validator(parse(validation.value()))
+                                            .validationLevel(validation.level())
+                                            .validationAction(validation.action())));
                 } else {
                     throw e;
                 }
@@ -776,10 +789,10 @@ public class DatastoreImpl implements AdvancedDatastore {
             EntityModel model = getMapper().getEntityModel(type);
             if (special.test(model)) {
                 grouped.computeIfAbsent(Void.class, c -> new ArrayList<>())
-                       .add(entity);
+                        .add(entity);
             } else {
                 grouped.computeIfAbsent(type, c -> new ArrayList<>())
-                       .add(entity);
+                        .add(entity);
             }
         }
         return grouped;
@@ -797,14 +810,12 @@ public class DatastoreImpl implements AdvancedDatastore {
     }
 
     /**
-     * Converts an entity (POJO) to a Document.  A special field will be added to keep track of the class type.
+     * Converts an entity (POJO) to a Document. A special field will be added to keep track of the class type.
      *
      * @param entity The POJO
      * @return the Document
-     * @morphia.internal
      * @since 2.3
      */
-    @MorphiaInternal
     private Document toDocument(Object entity) {
         final Class<?> type = mapper.getEntityModel(entity.getClass()).getType();
 
@@ -817,15 +828,14 @@ public class DatastoreImpl implements AdvancedDatastore {
     private <T> VersionBumpInfo updateVersioning(T entity) {
         final EntityModel entityModel = mapper.getEntityModel(entity.getClass());
         PropertyModel versionProperty = entityModel.getVersionProperty();
-        PropertyModel idProperty = entityModel.getIdProperty();
         if (versionProperty != null) {
             Long value = (Long) versionProperty.getValue(entity);
             long updated = value == null ? 1 : value + 1;
             versionProperty.setValue(entity, updated);
-            return new VersionBumpInfo(entity, idProperty, versionProperty, value, updated);
+            return new VersionBumpInfo(entity, versionProperty, value, updated);
         }
 
-        return new VersionBumpInfo();
+        return new VersionBumpInfo(entity);
     }
 
     private static class NoDeleteResult extends DeleteResult {
@@ -864,16 +874,16 @@ public class DatastoreImpl implements AdvancedDatastore {
         public abstract Document runCommand(Document command);
 
         public abstract <T> UpdateResult updateMany(MongoCollection<T> collection, Document queryObject, Document updateOperations,
-                                                    UpdateOptions options);
+                UpdateOptions options);
 
         public abstract <T> UpdateResult updateMany(MongoCollection<T> collection, Document queryObject, List<Document> updateOperations,
-                                                    UpdateOptions options);
+                UpdateOptions options);
 
         public abstract <T> UpdateResult updateOne(MongoCollection<T> collection, Document queryObject, Document updateOperations,
-                                                   UpdateOptions options);
+                UpdateOptions options);
 
         public abstract <T> UpdateResult updateOne(MongoCollection<T> collection, Document queryObject, List<Document> updateOperations,
-                                                   UpdateOptions options);
+                UpdateOptions options);
 
     }
 
@@ -926,32 +936,92 @@ public class DatastoreImpl implements AdvancedDatastore {
         @Override
         public Document runCommand(Document command) {
             return mongoClient
-                       .getDatabase("admin")
-                       .runCommand(command);
+                    .getDatabase("admin")
+                    .runCommand(command);
         }
 
         @Override
         public <T> UpdateResult updateMany(MongoCollection<T> collection, Document queryObject, Document updateOperations,
-                                           UpdateOptions options) {
+                UpdateOptions options) {
             return collection.updateMany(queryObject, updateOperations, options);
         }
 
         @Override
         public <T> UpdateResult updateOne(MongoCollection<T> collection, Document queryObject, Document updateOperations,
-                                          UpdateOptions options) {
+                UpdateOptions options) {
             return collection.updateOne(queryObject, updateOperations, options);
         }
 
         @Override
         public <T> UpdateResult updateMany(MongoCollection<T> collection, Document queryObject, List<Document> updateOperations,
-                                           UpdateOptions options) {
+                UpdateOptions options) {
             return collection.updateMany(queryObject, updateOperations, options);
         }
 
         @Override
         public <T> UpdateResult updateOne(MongoCollection<T> collection, Document queryObject, List<Document> updateOperations,
-                                          UpdateOptions options) {
+                UpdateOptions options) {
             return collection.updateOne(queryObject, updateOperations, options);
+        }
+    }
+
+    @MorphiaInternal
+    private static class VersionBumpInfo {
+        private final Long oldVersion;
+        private final boolean versioned;
+        private final Long newVersion;
+        private final PropertyModel versionProperty;
+        private final Object entity;
+
+        <T> VersionBumpInfo(T entity) {
+            versioned = false;
+            newVersion = null;
+            oldVersion = null;
+            versionProperty = null;
+            this.entity = entity;
+        }
+
+        <T> VersionBumpInfo(T entity, PropertyModel versionProperty, @Nullable Long oldVersion, Long newVersion) {
+            this.entity = entity;
+            versioned = true;
+            this.newVersion = newVersion;
+            this.oldVersion = oldVersion;
+            this.versionProperty = versionProperty;
+        }
+
+        public Object entity() {
+            return entity;
+        }
+
+        public void filter(Document filter) {
+            if (versioned()) {
+                filter.put(versionProperty.getMappedName(), oldVersion());
+            }
+        }
+
+        public <T> void filter(Query<T> query) {
+            if (versioned() && newVersion() != -1) {
+                query.filter(eq(versionProperty.getMappedName(), oldVersion()));
+            }
+
+        }
+
+        public Long newVersion() {
+            return newVersion;
+        }
+
+        public Long oldVersion() {
+            return oldVersion;
+        }
+
+        public void rollbackVersion() {
+            if (entity != null && versionProperty != null) {
+                versionProperty.setValue(entity, oldVersion);
+            }
+        }
+
+        public boolean versioned() {
+            return versioned;
         }
     }
 }

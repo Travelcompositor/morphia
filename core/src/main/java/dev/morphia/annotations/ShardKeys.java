@@ -18,11 +18,20 @@ import java.lang.annotation.Target;
 @Documented
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 @MorphiaExperimental
 public @interface ShardKeys {
+    /**
+     * The sharding options to apply.
+     *
+     * @return the options
+     */
     ShardOptions options() default @ShardOptions();
 
+    /**
+     * The shard keys
+     *
+     * @return the keys
+     */
     ShardKey[] value();
 }
-

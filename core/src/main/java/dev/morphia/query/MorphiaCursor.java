@@ -1,6 +1,5 @@
 package dev.morphia.query;
 
-
 import com.mongodb.ServerAddress;
 import com.mongodb.ServerCursor;
 import com.mongodb.client.MongoCursor;
@@ -8,7 +7,6 @@ import com.mongodb.lang.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * @param <T> the original type being iterated
@@ -44,6 +42,7 @@ public class MorphiaCursor<T> implements MongoCursor<T> {
         return wrapped.next();
     }
 
+    @Override
     public int available() {
         return wrapped.available();
     }
@@ -70,18 +69,16 @@ public class MorphiaCursor<T> implements MongoCursor<T> {
     }
 
     /**
-     * Converts this cursor to a List.  Care should be taken on large datasets as OutOfMemoryErrors are a risk.
+     * Converts this cursor to a List. Care should be taken on large datasets as OutOfMemoryErrors are a risk.
      *
      * @return the list of Entities
      */
     public List<T> toList() {
         final List<T> results = new ArrayList<>();
-        try {
+        try (wrapped) {
             while (wrapped.hasNext()) {
                 results.add(next());
             }
-        } finally {
-            wrapped.close();
         }
         return results;
     }
