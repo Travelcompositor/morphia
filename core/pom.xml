@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.morphia.morphia</groupId>
         <artifactId>morphia</artifactId>
-        <version>2.3.0-SNAPSHOT</version>
+        <version>2.2.9.TRAVELC.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -42,7 +42,7 @@
                     </execution>
                 </executions>
             </plugin>
-            -->
+            <!--
             <plugin>
                 <groupId>com.antwerkz.github</groupId>
                 <artifactId>issues-maven-plugin</artifactId>
@@ -62,6 +62,7 @@
                     <javadocUrl>https://morphia.dev/morphia/2.3/javadoc</javadocUrl>
                 </configuration>
             </plugin>
+            -->
             <plugin>
                 <groupId>com.antwerkz.sofia</groupId>
                 <artifactId>sofia-maven</artifactId>
