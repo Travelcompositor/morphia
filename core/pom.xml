@@ -44,6 +44,25 @@
             </plugin>
             -->
             <plugin>
+                <groupId>com.antwerkz.github</groupId>
+                <artifactId>issues-maven-plugin</artifactId>
+                <version>1.1.13</version>
+                <executions>
+                    <execution>
+                        <id>issues</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repository>MorphiaOrg/morphia</repository>
+                    <docsUrl>https://morphia.dev/morphia/2.3</docsUrl>
+                    <javadocUrl>https://morphia.dev/morphia/2.3/javadoc</javadocUrl>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.antwerkz.sofia</groupId>
                 <artifactId>sofia-maven</artifactId>
                 <version>${sofia.version}</version>
@@ -145,7 +164,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.18</version>
+            <version>1.12.19</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -204,10 +223,10 @@
 
     <profiles>
         <profile>
-            <id>quality</id>
+            <id>code-audits</id>
             <activation>
                 <property>
-                    <name>quality</name>
+                    <name>code-audits</name>
                 </property>
             </activation>
             <build>

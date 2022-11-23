@@ -4,9 +4,11 @@ import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.MultiPolygon;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
+
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.expressions.impls.Expression;
 import dev.morphia.query.Type;
+
 import org.bson.BsonWriter;
 import org.bson.Document;
 import org.bson.codecs.EncoderContext;
@@ -47,7 +49,7 @@ public final class Filters {
      * @return the filter
      * @query.filter $and
      */
-    public static Filter and(Filter... filters) {
+    public static LogicalFilter and(Filter... filters) {
         return new LogicalFilter("$and", filters);
     }
 
@@ -518,7 +520,7 @@ public final class Filters {
      * @return the filter
      * @query.filter $nor
      */
-    public static Filter nor(Filter... filters) {
+    public static LogicalFilter nor(Filter... filters) {
         return new LogicalFilter("$nor", filters);
     }
 
@@ -529,7 +531,7 @@ public final class Filters {
      * @return the filter
      * @query.filter $or
      */
-    public static Filter or(Filter... filters) {
+    public static LogicalFilter or(Filter... filters) {
         return new LogicalFilter("$or", filters);
     }
 

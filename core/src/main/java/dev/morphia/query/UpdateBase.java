@@ -1,17 +1,20 @@
 package dev.morphia.query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.mongodb.client.MongoCollection;
 import com.mongodb.lang.Nullable;
+
 import dev.morphia.DatastoreImpl;
 import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.internal.PathTarget;
 import dev.morphia.mapping.Mapper;
+import dev.morphia.query.internal.DatastoreAware;
 import dev.morphia.query.updates.UpdateOperator;
+
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.util.Arrays.asList;
 
@@ -70,6 +73,9 @@ public abstract class UpdateBase<T> {
 
         for (UpdateOperator update : updates) {
             PathTarget pathTarget = new PathTarget(mapper, mapper.getEntityModel(type), update.field(), true);
+            if (update instanceof DatastoreAware) {
+                ((DatastoreAware) update).setDatastore(datastore);
+            }
             operations.add(update.operator(), update.toTarget(pathTarget));
         }
         return operations.toDocument();

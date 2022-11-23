@@ -1,9 +1,14 @@
 package dev.morphia.test.query;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.zafarkhaja.semver.Version;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.result.InsertManyResult;
+
 import dev.morphia.aggregation.expressions.ComparisonExpressions;
 import dev.morphia.aggregation.expressions.Miscellaneous;
 import dev.morphia.query.FindOptions;
@@ -13,13 +18,10 @@ import dev.morphia.query.Type;
 import dev.morphia.test.TestBase;
 import dev.morphia.test.models.Budget;
 import dev.morphia.test.models.User;
+
 import org.bson.Document;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import static dev.morphia.aggregation.expressions.ComparisonExpressions.gt;
 import static dev.morphia.aggregation.expressions.Expressions.field;
@@ -267,7 +269,9 @@ public class FiltersTest extends TestBase {
     @Test
     public void testOr() {
         getDs().find(Budget.class)
-                .filter(or(lt("budget", 10000), gt("budget", 12)))
+                .filter(or()
+                        .add(lt("budget", 10000))
+                        .add(gt("budget", 12)))
                 .iterator();
     }
 

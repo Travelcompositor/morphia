@@ -1,16 +1,18 @@
 package dev.morphia.mapping.codec.pojo;
 
+import java.util.Collection;
+import java.util.Map;
+
 import com.mongodb.lang.Nullable;
+
 import dev.morphia.annotations.internal.MorphiaInternal;
+
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.IdGenerator;
 import org.bson.codecs.ObjectIdGenerator;
 import org.bson.types.ObjectId;
-
-import java.util.Collection;
-import java.util.Map;
 
 import static dev.morphia.aggregation.codecs.ExpressionHelper.document;
 
@@ -47,7 +49,7 @@ public class EntityEncoder<T> implements org.bson.codecs.Encoder<T> {
                     if (propertyModel.equals(idModel)) {
                         continue;
                     }
-                    encodeValue(writer, encoderContext, propertyModel, propertyModel.getAccessor().get(value));
+                    encodeProperty(writer, propertyModel, value, encoderContext);
                 }
             });
         } else {
@@ -55,6 +57,21 @@ public class EntityEncoder<T> implements org.bson.codecs.Encoder<T> {
                     .get((Class) value.getClass())
                     .encode(writer, value, encoderContext);
         }
+    }
+
+    /**
+     * Encodes a property on the model
+     *
+     * @param writer         the writer
+     * @param propertyModel  the property to encode
+     * @param value          the value of the property
+     * @param encoderContext the context
+     * @since 2.3
+     * @morphia.internal
+     */
+    @MorphiaInternal
+    public void encodeProperty(BsonWriter writer, PropertyModel propertyModel, Object value, EncoderContext encoderContext) {
+        encodeValue(writer, encoderContext, propertyModel, propertyModel.getAccessor().get(value));
     }
 
     @Override

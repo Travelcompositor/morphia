@@ -1,6 +1,8 @@
 package dev.morphia.test;
 
-import dev.morphia.Datastore;
+import java.util.List;
+import java.util.UUID;
+
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Property;
@@ -14,14 +16,11 @@ import dev.morphia.test.models.generics.Another;
 import dev.morphia.test.models.generics.Child;
 import dev.morphia.test.models.generics.ChildEntity;
 import dev.morphia.test.models.methods.MethodMappedSpecializedEntity;
+
 import org.bson.types.ObjectId;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.List;
-import java.util.UUID;
-
-import static dev.morphia.Morphia.createDatastore;
 import static dev.morphia.query.filters.Filters.eq;
 import static java.util.Arrays.asList;
 import static org.testng.Assert.assertEquals;
@@ -92,28 +91,29 @@ public class TestGenerics extends TestBase {
 
     @Test
     public void testMethodMappedGenericEntities() {
-        Datastore datastore = createDatastore(getMongoClient(), TEST_DB_NAME,
-                MapperOptions.builder()
-                        .propertyDiscovery(PropertyDiscovery.METHODS)
-                        .build());
+        withOptions(MapperOptions.builder()
+                .propertyDiscovery(PropertyDiscovery.METHODS)
+                .build(), () -> {
 
-        EntityModel entityModel = datastore.getMapper().map(MethodMappedSpecializedEntity.class).get(0);
+                    EntityModel entityModel = getMapper().map(MethodMappedSpecializedEntity.class).get(0);
 
-        PropertyModel test = entityModel.getProperty("test");
-        assertEquals(test.getType(), UUID.class);
+                    PropertyModel test = entityModel.getProperty("test");
+                    assertEquals(test.getType(), UUID.class);
 
-        MethodMappedSpecializedEntity beforeDB = new MethodMappedSpecializedEntity();
-        beforeDB.setId(UUID.randomUUID());
-        beforeDB.setTest(UUID.randomUUID());
-        datastore.save(beforeDB);
+                    MethodMappedSpecializedEntity beforeDB = new MethodMappedSpecializedEntity();
+                    beforeDB.setId(UUID.randomUUID());
+                    beforeDB.setTest(UUID.randomUUID());
+                    getDs().save(beforeDB);
 
-        MethodMappedSpecializedEntity loaded = datastore.find(MethodMappedSpecializedEntity.class)
-                .filter(eq("_id", beforeDB.getId()))
-                .first();
+                    MethodMappedSpecializedEntity loaded = getDs().find(MethodMappedSpecializedEntity.class)
+                            .filter(eq("_id", beforeDB.getId()))
+                            .first();
 
-        assertEquals(loaded.getId(), beforeDB.getId());
+                    assertEquals(loaded.getId(), beforeDB.getId());
 
-        assertEquals(loaded.getTest(), beforeDB.getTest());
+                    assertEquals(loaded.getTest(), beforeDB.getTest());
+                });
+
     }
 
     @Test
