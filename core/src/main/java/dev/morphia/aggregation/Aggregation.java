@@ -27,6 +27,7 @@ import dev.morphia.aggregation.stages.Sort;
 import dev.morphia.aggregation.stages.Stage;
 import dev.morphia.aggregation.stages.Unset;
 import dev.morphia.aggregation.stages.Unwind;
+import dev.morphia.annotations.internal.MorphiaInternal;
 import dev.morphia.query.filters.Filter;
 import dev.morphia.query.internal.MorphiaCursor;
 
@@ -497,8 +498,8 @@ public interface Aggregation<T> {
      * aggregation pipeline.
      *
      * @return this
-     * @since 2.3
      * @aggregation.expression $changeStream
+     * @since 2.3
      */
     Aggregation changeStream();
 
@@ -507,10 +508,22 @@ public interface Aggregation<T> {
      * aggregation pipeline.
      *
      * @param stream the options to apply to the stage
-     *
      * @return this
-     * @since 2.3
      * @aggregation.expression $changeStream
+     * @since 2.3
      */
     Aggregation changeStream(ChangeStream stream);
+
+    /**
+     * Adds a custom stage to this pipeline. Sometimes a new server release comes out with new stages and Morphia can lag sometimes.
+     * Using this method, custom stages can be added to fill that gap until Morphia can catch up. This method is marked as internal
+     * because while it should remain relatively stable, it may shift as needs evolve and isn't intended for general use.
+     *
+     * @param stage the new Stage
+     * @return this
+     * @morphia.internal
+     * @since 2.3
+     */
+    @MorphiaInternal
+    Aggregation<T> addStage(Stage stage);
 }

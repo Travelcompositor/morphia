@@ -3,7 +3,7 @@ name: Build Project
 on:
   push:
     branches-ignore:
-      - 'dependabot/**'
+      - 'dependabot/*'
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
     with:
       saveBuild: true
-      maven-flags: "-Dmongodb=6.0.2 -Dcode-audits"
+      maven-flags: "-Dmongodb=6.0.2"
 
   Test:
     needs:
@@ -49,7 +49,7 @@ jobs:
       - Snapshots
     steps:
       - name: Invoke antora build
-        uses: benc-uk/workflow-dispatch@v1
+        uses: benc-uk/workflow-dispatch@v121
         with:
           workflow: Docs
           repo: MorphiaOrg/morphia-docs
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Invoke critter build
-        uses: benc-uk/workflow-dispatch@v1
+        uses: benc-uk/workflow-dispatch@v121
         with:
           workflow: "Build Project"
           repo: MorphiaOrg/critter
