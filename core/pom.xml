@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.morphia.morphia</groupId>
         <artifactId>morphia</artifactId>
-        <version>2.4.0-SNAPSHOT</version>
+        <version>2.4.0.TRAVELC.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -42,25 +42,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.antwerkz.github</groupId>
-                <artifactId>issues-maven-plugin</artifactId>
-                <version>1.1.13</version>
-                <executions>
-                    <execution>
-                        <id>issues</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <phase>deploy</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <repository>MorphiaOrg/morphia</repository>
-                    <docsUrl>https://morphia.dev/morphia/2.3</docsUrl>
-                    <javadocUrl>https://morphia.dev/morphia/2.3/javadoc</javadocUrl>
-                </configuration>
-            </plugin>
+
             <plugin>
                 <groupId>com.antwerkz.sofia</groupId>
                 <artifactId>sofia-maven</artifactId>
@@ -199,6 +181,7 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>mongodb</artifactId>
             <version>1.18.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.zeroturnaround</groupId>
