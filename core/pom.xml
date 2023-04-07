@@ -81,7 +81,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>copy-license</id>
@@ -108,7 +108,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <!--                    <excludePackageNames>*.internal, dev.morphia.sofia</excludePackageNames>-->
@@ -133,7 +133,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <compilerArgs>
                         <arg>-parameters</arg>
@@ -158,12 +158,12 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.149</version>
+            <version>4.8.153</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.19</version>
+            <version>1.14.4</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -172,13 +172,13 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>23.0.0</version>
+            <version>24.0.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.7.2</version>
+            <version>4.7.3</version>
             <scope>compile</scope>
         </dependency>
 
@@ -194,6 +194,11 @@
             <groupId>com.antwerkz.bottlerocket</groupId>
             <artifactId>bottlerocket</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>1.18.0</version>
         </dependency>
         <dependency>
             <groupId>org.zeroturnaround</groupId>
@@ -216,6 +221,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.15.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import com.mongodb.lang.Nullable;
@@ -33,7 +34,7 @@ import static java.lang.Boolean.FALSE;
 public final class Conversions {
     private static final Logger LOG = LoggerFactory.getLogger(Conversions.class);
 
-    private static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> CONVERSIONS = new HashMap<>();
+    private static final Map<Class<?>, Map<Class<?>, Function<?, ?>>> CONVERSIONS = new ConcurrentHashMap<>();
 
     static {
         registerStringConversions();
@@ -101,6 +102,13 @@ public final class Conversions {
         register(String.class, Long.class, Long::parseLong);
         register(String.class, Float.class, Float::parseFloat);
         register(String.class, Short.class, Short::parseShort);
+        register(String.class, boolean.class, Boolean::parseBoolean);
+        register(String.class, byte.class, Byte::parseByte);
+        register(String.class, double.class, Double::parseDouble);
+        register(String.class, int.class, Integer::valueOf);
+        register(String.class, long.class, Long::parseLong);
+        register(String.class, float.class, Float::parseFloat);
+        register(String.class, short.class, Short::parseShort);
         register(String.class, URI.class, str -> URI.create(str.replace("%46", ".")));
         register(String.class, UUID.class, UUID::fromString);
     }
@@ -108,7 +116,6 @@ public final class Conversions {
     /**
      * Register a conversion between two types. For example, to register the conversion of {@link Date} to a {@link Long}, this method
      * could be invoked as follows:
-     *
      * <code>
      * register(Date.class, Long.class, Date::getTime);
      * </code>
@@ -144,7 +151,7 @@ public final class Conversions {
         }
 
         final Function function = CONVERSIONS
-                .computeIfAbsent(fromType, (f) -> new HashMap<>())
+                .computeIfAbsent(fromType, (f) -> new ConcurrentHashMap<>())
                 .get(target);
         if (function == null) {
             if (target.equals(String.class)) {
@@ -171,7 +178,6 @@ public final class Conversions {
     /**
      * Register a conversion between two types. For example, to register the conversion of {@link Date} to a {@link Long}, this method
      * could be invoked as follows:
-     *
      * <code>
      * register(Date.class, Long.class, Date::getTime);
      * </code>

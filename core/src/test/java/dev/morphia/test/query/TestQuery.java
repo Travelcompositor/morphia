@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.jayway.awaitility.Awaitility;
@@ -48,6 +49,7 @@ import dev.morphia.test.models.Keys;
 import dev.morphia.test.models.Rectangle;
 import dev.morphia.test.models.Student;
 import dev.morphia.test.models.UsesCustomIdObject;
+import dev.morphia.test.query.TestLegacyQuery.CappedPic;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -83,6 +85,7 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertThrows;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -210,6 +213,14 @@ public class TestQuery extends TestBase {
         assertEquals(getDs().find(Pic.class)
                 .filter(regex("name")
                         .pattern("PIC")
+                        .options("i"))
+                .count(), 4);
+        assertEquals(getDs().find(Pic.class)
+                .filter(regex("name", "PIC")
+                        .options("i"))
+                .count(), 4);
+        assertEquals(getDs().find(Pic.class)
+                .filter(regex("name", Pattern.compile("PIC"))
                         .options("i"))
                 .count(), 4);
 
@@ -679,6 +690,20 @@ public class TestQuery extends TestBase {
                 .find(PhotoWithKeywords.class)
                 .filter(in("keywords", asList(new Keyword("Scott"), new Keyword("Randy"))));
         assertNotNull(query.iterator(new FindOptions().limit(1)).next());
+    }
+
+    @Test
+    public void testInvalidQueries() {
+        getMapper().map(CappedPic.class);
+        Query<CappedPic> query = getDs().find(CappedPic.class)
+                .filter(eq("bad.name", "blargle"));
+
+        assertThrows(ValidationException.class, () -> query.first());
+        assertThrows(ValidationException.class, () -> query.first());
+
+        getDs().find(CappedPic.class)
+                .disableValidation()
+                .filter(eq("bad.name", "blargle"));
     }
 
     @Test

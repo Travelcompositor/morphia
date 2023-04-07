@@ -5,12 +5,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.antwerkz.bottlerocket.Versions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.zafarkhaja.semver.Version;
@@ -29,27 +29,42 @@ import static org.testng.Assert.assertTrue;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class BuildConfigTest {
+    private static final Versions LATEST = Versions.values()[0];
     final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
     @Test
     public void testBuildMatrix() throws IOException {
-        Map map;
+        Map yaml;
         try (InputStream inputStream = new FileInputStream("../.github/workflows/build.yml")) {
-            map = objectMapper.readValue(inputStream, LinkedHashMap.class);
+            yaml = objectMapper.readValue(inputStream, LinkedHashMap.class);
         }
 
-        assertEquals(walk(map, of("jobs", "Build", "with", "maven-flags")),
-                String.format("-Dmongodb=%s", Versions.Version60.version()));
+        assertEquals(walk(yaml, of("jobs", "Build", "with", "maven-flags")),
+                format("-Dmongodb=%s", LATEST),
+                format("Should find -Dmongodb=%s in ../.github/workflows/build.yml", LATEST));
 
-        checkForVersions(walk(map, of("jobs", "Test", "strategy", "matrix", "mongo")),
-                Versions.Version60, Versions.Version50, Versions.Version44, Versions.Version42);
+        Collection<?> walk = walk(yaml, of("jobs", "Test", "strategy", "matrix", "mongo"));
+        var list = walk.stream().map(i -> i.toString()).collect(Collectors.toList());
+        assertEquals(list, List.of(LATEST.toString()),
+                format("Should find %s in the matrix in ../.github/workflows/build.yml", LATEST));
+
+        List<Map<String, Object>> include = walk(yaml, of("jobs", "Test", "strategy", "matrix", "include"));
+        var versions = Versions.values();
+        assertEquals(include.size(), versions.length);
+        for (int i = 0; i < versions.length; i++) {
+            Map<String, Object> map = include.get(i);
+            String mongo = map.get("mongo").toString();
+            Versions version = versions[i];
+            assertEquals(mongo.toString(), version.toString(), format("Should have the %s entry in the includes", version));
+        }
 
         try (InputStream inputStream = new FileInputStream("../.github/workflows/pull-request.yml")) {
-            map = objectMapper.readValue(inputStream, LinkedHashMap.class);
+            yaml = objectMapper.readValue(inputStream, LinkedHashMap.class);
         }
 
-        assertEquals(walk(map, of("jobs", "Build", "with", "maven-flags")),
-                String.format("-Dmongodb=%s", Versions.Version60.version()));
+        assertEquals(walk(yaml, of("jobs", "Build", "with", "maven-flags")),
+                format("-Dmongodb=%s", LATEST),
+                format("Should find -Dmongodb=%s in ../.github/workflows/pull-request.yml", LATEST));
     }
 
     private static <T> T walk(Map map, List<String> steps) {
@@ -107,7 +122,8 @@ public class BuildConfigTest {
         List<String> expected = Arrays.stream(versions)
                 .map(v -> v.version().toString())
                 .collect(Collectors.toList());
-        assertEquals(mongo, expected);
+        assertEquals(mongo, expected,
+                String.format("Should find -Dmongodb=%s in ../.github/workflows/build.yml", LATEST));
     }
 
 }

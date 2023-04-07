@@ -3,7 +3,6 @@ package dev.morphia.test.sharding;
 import java.io.File;
 import java.time.LocalDateTime;
 
-import com.antwerkz.bottlerocket.Versions;
 import com.antwerkz.bottlerocket.clusters.ClusterBuilder;
 import com.github.zafarkhaja.semver.Version;
 
@@ -32,8 +31,7 @@ public class TestSharding extends TestBase {
 
     @Test
     public void testShardCollection() {
-        String mongodb = System.getenv("MONGODB");
-        var version = mongodb != null ? Version.valueOf(mongodb) : Versions.latest();
+        Version version = Version.valueOf("6.0.5");
         try (var cluster = new ClusterBuilder(SHARDED)
                 .baseDir(new File("target/mongo-" + version))
                 .version(version)

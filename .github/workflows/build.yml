@@ -11,16 +11,33 @@ jobs:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
     with:
       saveBuild: true
-      maven-flags: "-Dmongodb=6.0.2"
+      maven-flags: "-Dmongodb=6"
 
   Test:
     needs:
       - Build
     strategy:
       matrix:
-        java: [ 11, 19 ]
-        mongo: [ 6.0.2, 5.0.13, 4.4.17, 4.2.23 ]
-        driver: [ 4.6.1, 4.7.1 ]
+        java: [ 11 ]
+        mongo: [ 6 ]
+        driver: [ 4.9.0, 4.8.1, 4.7.2, 4.6.1 ]
+        include:
+          - java: 19
+            mongo: 6
+            driver: 4.9.0
+          - java: 11
+            mongo: 5
+            driver: 4.9.0
+          - java: 11
+            mongo: 4.4.19
+            driver: 4.9.0
+          - java: 11
+            mongo: 4.2.24
+            driver: 4.9.0
+          - java: 11
+            mongo: 4.0.28
+            driver: 4.9.0
+
     uses: evanchooly/workflows/.github/workflows/build.yml@master
     secrets:
       GH_TOKEN: ${{ secrets.TESTING_GH_OAUTH }}

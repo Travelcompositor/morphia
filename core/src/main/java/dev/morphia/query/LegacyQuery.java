@@ -30,6 +30,8 @@ import dev.morphia.query.internal.MorphiaKeyCursor;
 import dev.morphia.query.updates.UpdateOperator;
 import dev.morphia.sofia.Sofia;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +66,7 @@ public class LegacyQuery<T> implements CriteriaContainer, Query<T> {
     @Deprecated
     private FindOptions options;
     private FindOptions lastOptions;
+    private ValidationException invalid;
 
     /**
      * Creates a Query for the given type and collection
@@ -105,6 +108,12 @@ public class LegacyQuery<T> implements CriteriaContainer, Query<T> {
         add(container);
 
         return new FieldEndImpl<CriteriaContainer>(datastore, field, container, model, this.isValidatingNames());
+    }
+
+    @MorphiaInternal
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    public void invalid(ValidationException e) {
+        invalid = e;
     }
 
     @Override
@@ -227,7 +236,12 @@ public class LegacyQuery<T> implements CriteriaContainer, Query<T> {
 
     @Override
     public FieldEnd<? extends Query<T>> field(String name) {
-        return new FieldEndImpl<>(datastore, name, this, model, this.isValidatingNames());
+        try {
+            return new FieldEndImpl<>(datastore, name, this, model, this.isValidatingNames());
+        } catch (ValidationException e) {
+            invalid = e;
+            throw e;
+        }
     }
 
     @Override
@@ -269,6 +283,7 @@ public class LegacyQuery<T> implements CriteriaContainer, Query<T> {
 
     @Override
     public T first(FindOptions options) {
+        checkValidity();
         try (MongoCursor<T> it = iterator(options.copy().limit(1))) {
             return it.tryNext();
         }
@@ -283,6 +298,11 @@ public class LegacyQuery<T> implements CriteriaContainer, Query<T> {
     public T modify(ModifyOptions options, UpdateOperator... updates) {
         return new Modify<>(datastore, datastore.configureCollection(options, collection), this, type, of(updates))
                 .execute(options);
+    }
+
+    @MorphiaInternal
+    public boolean isValidate() {
+        return validateName;
     }
 
     @Override
@@ -464,15 +484,27 @@ public class LegacyQuery<T> implements CriteriaContainer, Query<T> {
     }
 
     private Document getQueryDocument() {
-        final Document obj = new Document();
+        checkValidity();
+        try {
+            final Document obj = new Document();
 
-        if (baseQuery != null) {
-            obj.putAll(baseQuery);
+            if (baseQuery != null) {
+                obj.putAll(baseQuery);
+            }
+
+            obj.putAll(compoundContainer.toDocument());
+            datastore.getMapper().updateQueryWithDiscriminators(datastore.getMapper().getEntityModel(getEntityClass()), obj);
+            return obj;
+        } catch (ValidationException e) {
+            invalid = e;
+            throw e;
         }
+    }
 
-        obj.putAll(compoundContainer.toDocument());
-        datastore.getMapper().updateQueryWithDiscriminators(datastore.getMapper().getEntityModel(getEntityClass()), obj);
-        return obj;
+    private void checkValidity() {
+        if (invalid != null) {
+            throw invalid;
+        }
     }
 
     @NonNull

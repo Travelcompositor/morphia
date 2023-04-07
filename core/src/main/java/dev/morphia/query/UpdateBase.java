@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.lang.NonNull;
 import com.mongodb.lang.Nullable;
 
 import dev.morphia.DatastoreImpl;
@@ -14,7 +15,6 @@ import dev.morphia.query.internal.DatastoreAware;
 import dev.morphia.query.updates.UpdateOperator;
 
 import org.bson.Document;
-import org.jetbrains.annotations.NotNull;
 
 import static java.util.Arrays.asList;
 
@@ -45,7 +45,7 @@ public abstract class UpdateBase<T> {
         this.collection = collection;
     }
 
-    @NotNull
+    @NonNull
     static <T> List<T> coalesce(T first, T[] updates) {
         List<T> operators = new ArrayList<>();
         operators.add(first);
@@ -73,13 +73,19 @@ public abstract class UpdateBase<T> {
         final Operations operations = new Operations(datastore, mapper.getEntityModel(type));
 
         for (UpdateOperator update : updates) {
-            PathTarget pathTarget = new PathTarget(mapper, mapper.getEntityModel(type), update.field(), true);
+            PathTarget pathTarget = new PathTarget(mapper, mapper.getEntityModel(type), update.field(), validate());
             if (update instanceof DatastoreAware) {
                 ((DatastoreAware) update).setDatastore(datastore);
             }
             operations.add(update.operator(), update.toTarget(pathTarget));
         }
         return operations.toDocument();
+    }
+
+    private boolean validate() {
+        return query instanceof MorphiaQuery
+                ? ((MorphiaQuery) query).isValidate()
+                : ((LegacyQuery) query).isValidate();
     }
 
     @Override

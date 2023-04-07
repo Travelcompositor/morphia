@@ -1,9 +1,12 @@
 package dev.morphia.query.filters;
 
+import java.util.regex.Pattern;
+
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.MultiPolygon;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
+import com.mongodb.lang.Nullable;
 
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.expressions.impls.Expression;
@@ -202,7 +205,7 @@ public final class Filters {
      * @return the filter
      * @query.filter $eq
      */
-    public static Filter eq(String field, Object val) {
+    public static Filter eq(String field, @Nullable Object val) {
         return new Filter("$eq", field, val) {
             @Override
             public void encode(Datastore datastore, BsonWriter writer, EncoderContext context) {
@@ -553,9 +556,37 @@ public final class Filters {
      * @param field the field to check
      * @return the filter
      * @query.filter $regex
+     * @deprecated use {@link #regex(String, String)} or {@link #regex(String, Pattern)} instead
      */
+    @Deprecated(since = "2.4.0", forRemoval = true)
     public static RegexFilter regex(String field) {
-        return new RegexFilter(field);
+        return new RegexFilter(field, null);
+    }
+
+    /**
+     * Selects documents where values match a specified regular expression.
+     *
+     * @param field   the field to check
+     * @param pattern the regex pattern
+     * @return the filter
+     * @query.filter $regex
+     * @since 2.4.0
+     */
+    public static RegexFilter regex(String field, String pattern) {
+        return new RegexFilter(field, pattern);
+    }
+
+    /**
+     * Selects documents where values match a specified regular expression.
+     *
+     * @param field   the field to check
+     * @param pattern the regex pattern
+     * @return the filter
+     * @query.filter $regex
+     * @since 2.4.0
+     */
+    public static RegexFilter regex(String field, Pattern pattern) {
+        return new RegexFilter(field, pattern.pattern());
     }
 
     /**
